@@ -23,12 +23,32 @@
         </form>
 
         <h2>Current Units</h2>
-        <ul>
-        <!-- This is Jinja2 template syntax - Flask will loop through the 'units' list we send from Python -->
-        {% for unit in units %}
-            <!-- For each unit, display its name and status -->
-            <li>{{unit.name}} - {{unit.status}}</li>
-        {% endfor %}
-        </ul>
+        {% if units %}
+        <table border="1" cellpadding ="10">
+            <tr>
+                <th> Unit Name</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            {% for unit in units %}
+            <tr>
+                <td>{{ unit.name}}</td>
+                <td>{{ unit.status}}</td>
+                <td>
+                    <form method="POST" action="/update/{{ loop.index0 }}" style="display:inline">
+                        <select name="new_status">
+                            <option value = "Available">Available</option>
+                            <option value = "Viewing">Viewing</option>
+                            <option value = "Reserved">Reserved</option>
+                            <option value = "Sold">Sold</option>
+                        </select>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No units yet. Add one above!</p>
+    {% endif %}
     </body>
 </html>

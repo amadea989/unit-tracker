@@ -34,6 +34,21 @@ def add_unit():
     # This prevents the "resubmit form" issue if user refreshes
     return redirect(url_for('home'))
 
+# Route for updating a unit's status
+# <int:unit_id> means we expect a number in the URL (the unit's position in the list)
+@app.route('/update/<int:unit_id>', methods=['POST'])
+def update_unit(unit_id):
+    # Get the new status from the form
+    new_status = request.form['new_status']
+    
+    # Update the unit at this position in our list
+    # unit_id is the index, so units[0] is first unit, units[1] is second, etc.
+    if unit_id < len(units):  # Make sure the unit_id exists
+        units[unit_id]['status'] = new_status
+    
+    # Redirect back to home to see the updated list
+    return redirect(url_for('home'))
+
 # This runs the app in debug mode (shows errors, auto-reloads when you change code)
 if __name__ == '__main__':
     app.run(debug=True)
