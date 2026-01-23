@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Unit Tracker</title>
+        <style>
+            body { font-family: Arial; margin: 40px; }
+            input, select, button {margin: 10px 0; padding: 8px; }
+        </style>
+    </head>
+    <body>
+        <h1>Unit progress tracker</h1>
+
+        <h2>Add New Unit</h2>
+        <form method="POST" action="/add">
+            <input type="text" name="unit_name" placeholder="Unit Name" required ><br>
+            <select name="status">
+                <option value="Available">Available</option>
+                <option value="Viewing">Viewing</option>
+                <option value="Reserved">Reserved</option>
+                <option value="Sold">Sold</option>
+            </select><br>
+            <button type="submit">Add Unit</button>
+        </form>
+
+        <h2>Current Units</h2>
+        <ul>
+        <!-- This is Jinja2 template syntax - Flask will loop through the 'units' list we send from Python -->
+        {% for unit in units %}
+            <!-- For each unit, display its name and status -->
+            <li>{{unit.name}} - {{unit.status}}</li>
+        {% endfor %}
+        </ul>
+    </body>
+</html>
