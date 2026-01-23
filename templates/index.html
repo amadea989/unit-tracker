@@ -3,52 +3,103 @@
     <head>
         <title>Unit Tracker</title>
         <style>
-            body { font-family: Arial; margin: 40px; }
-            input, select, button {margin: 10px 0; padding: 8px; }
+            body { font-family: Arial; margin: 40px; background-color: #f5f5f5; }
+            input, select, button { margin: 10px 0; padding: 8px; }
+            .project-section { 
+                background: white; 
+                padding: 20px; 
+                margin: 20px 0; 
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .project-header { 
+                background: #2c3e50; 
+                color: white; 
+                padding: 10px; 
+                border-radius: 4px;
+                margin-bottom: 15px;
+            }
+            table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+            th { background: #34495e; color: white; padding: 10px; text-align: left; }
+            td { padding: 10px; border-bottom: 1px solid #ddd; }
+            .add-project-form {
+                background: #3498db;
+                color: white;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+            }
         </style>
     </head>
     <body>
-        <h1>Unit progress tracker</h1>
+        <h1>Unit Progress Tracker</h1>
 
-        <h2>Add New Unit</h2>
-        <form method="POST" action="/add">
-            <input type="text" name="unit_name" placeholder="Unit Name" required ><br>
-            <select name="status">
-                <option value="Available">Available</option>
-                <option value="Viewing">Viewing</option>
-                <option value="Reserved">Reserved</option>
-                <option value="Sold">Sold</option>
-            </select><br>
-            <button type="submit">Add Unit</button>
-        </form>
+        <!-- Form to add new project -->
+        <div class="add-project-form">
+            <h2>Add New Project/Complex</h2>
+            <form method="POST" action="/add_project">
+                <input type="text" name="project_name" placeholder="Project Name (e.g., Sunset Apartments)" required>
+                <button type="submit">Create Project</button>
+            </form>
+        </div>
 
-        <h2>Current Units</h2>
-        {% if units %}
-        <table border="1" cellpadding ="10">
-            <tr>
-                <th> Unit Name</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-            {% for unit in units %}
-            <tr>
-                <td>{{ unit.name}}</td>
-                <td>{{ unit.status}}</td>
-                <td>
-                    <form method="POST" action="/update/{{ loop.index0 }}" style="display:inline">
-                        <select name="new_status">
-                            <option value = "Available">Available</option>
-                            <option value = "Viewing">Viewing</option>
-                            <option value = "Reserved">Reserved</option>
-                            <option value = "Sold">Sold</option>
-                        </select>
-                    </form>
-                </td>
-            </tr>
+        <!-- Display each project and its units -->
+        {% if projects %}
+            {% for project in projects %}
+            <div class="project-section">
+                <div class="project-header">
+                    <h2>{{ project.name }}</h2>
+                </div>
+
+                <!-- Form to add unit to THIS project -->
+                <h3>Add Unit to {{ project.name }}</h3>
+                <form method="POST" action="/add_unit/{{ loop.index0 }}">
+                    <input type="text" name="unit_name" placeholder="Unit Name/Number" required>
+                    <select name="status">
+                        <option value="Available">Available</option>
+                        <option value="Viewing">Viewing</option>
+                        <option value="Reserved">Reserved</option>
+                        <option value="Sold">Sold</option>
+                    </select>
+                    <button type="submit">Add Unit</button>
+                </form>
+
+                <!-- Display units in this project -->
+                <h3>Units ({{ project.units|length }})</h3>
+                {% if project.units %}
+                <table>
+                    <tr>
+                        <th>Unit Name</th>
+                        <th>Status</th>
+                        <th>Update Status</th>
+                    </tr>
+                    {% for unit in project.units %}
+                    <tr>
+                        <td>{{ unit.name }}</td>
+                        <td><strong>{{ unit.status }}</strong></td>
+                        <td>
+                            <form method="POST" action="/update/{{ loop.index0 }}/{{ loop.index0 }}" style="display:inline">
+                                <select name="new_status">
+                                    <option value="Available">Available</option>
+                                    <option value="Viewing">Viewing</option>
+                                    <option value="Reserved">Reserved</option>
+                                    <option value="Sold">Sold</option>
+                                </select>
+                                <button type="submit">Update</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+                {% else %}
+                <p>No units in this project yet.</p>
+                {% endif %}
+            </div>
             {% endfor %}
-        </table>
-    {% else %}
-        <p>No units yet. Add one above!</p>
-    {% endif %}
+        {% else %}
+        <div class="project-section">
+            <p>No projects yet. Create one above to get started!</p>
+        </div>
+        {% endif %}
     </body>
 </html>
