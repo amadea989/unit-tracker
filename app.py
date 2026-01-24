@@ -1,8 +1,9 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import sqlite3
 import json
 
 app = Flask(__name__)
+app.secret_key = 'amadea' # Change this to something random
 
 # Function to get database connection
 def get_db():
@@ -38,6 +39,32 @@ def init_db():
 
 # Call this when app starts
 init_db()
+
+# Login route
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        password = request.form['password']
+        # Simple password check - in production, use proper auth
+        if password == 'admin123':  # Change this password
+            session['logged_in'] = True
+            return redirect(url_for('home'))
+        else:
+            return render_template('login.html', error='Invalid password')
+    return render_template('login.html')
+
+# Logout route
+@app.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return redirect(url_for('login'))
+
+# Check if user is logged in before accessing any page
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'static']
+    if request.endpoint not in allowed_routes and 'logged_in' not in session:
+        return redirect(url_for('login'))
 
 @app.route('/')
 def home():
