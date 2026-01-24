@@ -48,7 +48,10 @@
             {% for project in projects %}
             <div class="project-section">
                 <div class="project-header">
-                    <h2>{{ project.name }}</h2>
+                    <h2 style="display: inline-block;">{{ project.name }}</h2>
+                    <form method="POST" action="/delete_project/{{ project.id }}" style="display: inline-block; float: right;" onsubmit="return confirm('Delete this entire project and all its units?');">
+                        <button type="submit" style="background: #c0392b; color: white; padding: 5px 15px; border: none; border-radius: 4px; cursor: pointer;">Delete Project</button>
+                    </form>
                 </div>
 
                 <!-- Form to add unit to THIS project -->
@@ -72,6 +75,7 @@
                         <th>Unit Name</th>
                         <th>Status</th>
                         <th>Update Status</th>
+                        <th>Delete</th>
                     </tr>
                     {% for unit in project.units %}
                     <tr>
@@ -86,6 +90,11 @@
                                     <option value="Sold">Sold</option>
                                 </select>
                                 <button type="submit">Update</button>
+                            </form>
+                        </td>
+                        <td>
+                            <form method="POST" action="/delete_unit/{{ unit.id }}" style="display:inline;" onsubmit="return confirm('Delete this unit?');">
+                                <button type="submit" style="background: #e74c3c; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
                             </form>
                         </td>
                     </tr>

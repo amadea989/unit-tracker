@@ -56,7 +56,7 @@ def home():
         
         # Convert units to list of dicts
         units = [{'name': u['name'], 'status': u['status'], 'id': u['id']} 
-                 for u in units_data]
+                for u in units_data]
         
         projects.append({
             'id': project['id'],
@@ -136,6 +136,27 @@ def update_details(unit_id):
     conn.close()
     
     return redirect(url_for('unit_details', unit_id=unit_id))
+
+# Route to delete a unit
+@app.route('/delete_unit/<int:unit_id>', methods=['POST'])
+def delete_unit(unit_id):
+    conn = get_db()
+    conn.execute('DELETE FROM units WHERE id = ?', (unit_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('home'))
+
+# Route to delete a project (and all its units)
+@app.route('/delete_project/<int:project_id>', methods=['POST'])
+def delete_project(project_id):
+    conn = get_db()
+    # Delete all units in this project first
+    conn.execute('DELETE FROM units WHERE project_id = ?', (project_id,))
+    # Then delete the project
+    conn.execute('DELETE FROM projects WHERE id = ?', (project_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     app.run(debug=True)
