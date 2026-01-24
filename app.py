@@ -1,63 +1,141 @@
 from flask import Flask, render_template, request, redirect, url_for
-#initialize Flask app
+import sqlite3
+import json
+
 app = Flask(__name__)
 
-# This is our "database" for now - just a list stored in memory
-# When you restart the app, this resets. We'll fix that later with a real database
+# Function to get database connection
+def get_db():
+    conn = sqlite3.connect('tracker.db')
+    conn.row_factory = sqlite3.Row  # This lets us access columns by name
+    return conn
 
-projects = []
+# Initialize database - creates tables if they don't exist
+def init_db():
+    conn = get_db()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS projects (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL
+        )
+    ''')
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS units (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER,
+            name TEXT NOT NULL,
+            status TEXT NOT NULL,
+            buyer_name TEXT,
+            buyer_phone TEXT,
+            buyer_email TEXT,
+            sale_price TEXT,
+            notes TEXT,
+            FOREIGN KEY (project_id) REFERENCES projects (id)
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
-# Route for the home page - handles GET requests (when you just visit the page)
+# Call this when app starts
+init_db()
+
 @app.route('/')
 def home():
+    conn = get_db()
     
-    # render_template loads the HTML file and sends our 'units' list to it
-    return render_template ('index.html', projects=projects)
+    # Get all projects
+    projects_data = conn.execute('SELECT * FROM projects').fetchall()
+    
+    # Build projects list with their units
+    projects = []
+    for project in projects_data:
+        units_data = conn.execute(
+            'SELECT * FROM units WHERE project_id = ?', 
+            (project['id'],)
+        ).fetchall()
+        
+        # Convert units to list of dicts
+        units = [{'name': u['name'], 'status': u['status'], 'id': u['id']} 
+                 for u in units_data]
+        
+        projects.append({
+            'id': project['id'],
+            'name': project['name'],
+            'units': units
+        })
+    
+    conn.close()
+    return render_template('index.html', projects=projects)
 
-# Route to add a new project
 @app.route('/add_project', methods=['POST'])
 def add_project():
     project_name = request.form['project_name']
     
-    # Create new project with empty units list
-    new_project = {
-        'name': project_name,
-        'units': []  # Each project starts with no units
-    }
+    conn = get_db()
+    conn.execute('INSERT INTO projects (name) VALUES (?)', (project_name,))
+    conn.commit()
+    conn.close()
     
-    projects.append(new_project)
     return redirect(url_for('home'))
 
-# Route to add a unit to a specific project
-# <int:project_id> means we expect the project's position in the list
 @app.route('/add_unit/<int:project_id>', methods=['POST'])
 def add_unit(project_id):
     unit_name = request.form['unit_name']
     status = request.form['status']
     
-    # Create the unit
-    new_unit = {
-        'name': unit_name,
-        'status': status
-    }
-    
-    # Add unit to the specific project's units list
-    if project_id < len(projects):
-        projects[project_id]['units'].append(new_unit)
+    conn = get_db()
+    conn.execute(
+        'INSERT INTO units (project_id, name, status) VALUES (?, ?, ?)',
+        (project_id, unit_name, status)
+    )
+    conn.commit()
+    conn.close()
     
     return redirect(url_for('home'))
 
-# Route to update a unit's status
 @app.route('/update/<int:project_id>/<int:unit_id>', methods=['POST'])
 def update_unit(project_id, unit_id):
     new_status = request.form['new_status']
     
-    # Update the unit in the specific project
-    if project_id < len(projects) and unit_id < len(projects[project_id]['units']):
-        projects[project_id]['units'][unit_id]['status'] = new_status
+    conn = get_db()
+    conn.execute(
+        'UPDATE units SET status = ? WHERE id = ?',
+        (new_status, unit_id)
+    )
+    conn.commit()
+    conn.close()
     
     return redirect(url_for('home'))
 
-# This runs the app in debug mode (shows errors, auto-reloads when you change code)
+# Route to view unit details
+@app.route('/unit/<int:unit_id>')
+def unit_details(unit_id):
+    conn = get_db()
+    unit = conn.execute('SELECT * FROM units WHERE id = ?', (unit_id,)).fetchone()
+    project = conn.execute('SELECT * FROM projects WHERE id = ?', (unit['project_id'],)).fetchone()
+    conn.close()
+    
+    return render_template('unit_details.html', unit=unit, project=project)
+
+# Route to update unit details
+@app.route('/update_details/<int:unit_id>', methods=['POST'])
+def update_details(unit_id):
+    buyer_name = request.form.get('buyer_name', '')
+    buyer_phone = request.form.get('buyer_phone', '')
+    buyer_email = request.form.get('buyer_email', '')
+    sale_price = request.form.get('sale_price', '')
+    notes = request.form.get('notes', '')
+    
+    conn = get_db()
+    conn.execute('''
+        UPDATE units 
+        SET buyer_name = ?, buyer_phone = ?, buyer_email = ?, sale_price = ?, notes = ?
+        WHERE id = ?
+    ''', (buyer_name, buyer_phone, buyer_email, sale_price, notes, unit_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('unit_details', unit_id=unit_id))
+
 if __name__ == '__main__':
     app.run(debug=True)

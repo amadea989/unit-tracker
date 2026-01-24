@@ -53,7 +53,7 @@
 
                 <!-- Form to add unit to THIS project -->
                 <h3>Add Unit to {{ project.name }}</h3>
-                <form method="POST" action="/add_unit/{{ loop.index0 }}">
+                <form method="POST" action="/add_unit/{{ project.id }}">
                     <input type="text" name="unit_name" placeholder="Unit Name/Number" required>
                     <select name="status">
                         <option value="Available">Available</option>
@@ -75,10 +75,10 @@
                     </tr>
                     {% for unit in project.units %}
                     <tr>
-                        <td>{{ unit.name }}</td>
+                        <td><a href="/unit/{{ unit.id }}" style="color: #3498db; text-decoration: none; font-weight: bold;">{{ unit.name }}</a></td>
                         <td><strong>{{ unit.status }}</strong></td>
                         <td>
-                            <form method="POST" action="/update/{{ loop.index0 }}/{{ loop.index0 }}" style="display:inline">
+                            <form method="POST" action="/update/{{ project.id }}/{{ unit.id }}" style="display:inline">
                                 <select name="new_status">
                                     <option value="Available">Available</option>
                                     <option value="Viewing">Viewing</option>
