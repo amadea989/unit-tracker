@@ -1,0 +1,167 @@
+/* Unit Details - Corporate Professional */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    padding: 30px 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.back-nav {
+    margin-bottom: 20px;
+}
+
+.back-link {
+    background: #0078d4;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 3px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.back-link:hover {
+    background: #106ebe;
+}
+
+.details-card {
+    background: #ffffff;
+    padding: 40px;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.header {
+    padding-bottom: 25px;
+    border-bottom: 2px solid #e1e1e1;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    color: #323130;
+    font-size: 2em;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.project-name {
+    color: #605e5c;
+    font-size: 1em;
+    margin-bottom: 15px;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 2px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-available {
+    background: #edebe9;
+    color: #605e5c;
+}
+
+.status-viewing {
+    background: #c7e0f4;
+    color: #004578;
+}
+
+.status-reserved {
+    background: #fff4ce;
+    color: #8a6116;
+}
+
+.status-sold {
+    background: #dff6dd;
+    color: #0b6a0b;
+}
+
+.section {
+    background: #faf9f8;
+    padding: 25px;
+    border-radius: 4px;
+    margin-bottom: 25px;
+    border: 1px solid #edebe9;
+}
+
+.section h2 {
+    color: #323130;
+    margin-bottom: 20px;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+label {
+    display: block;
+    font-weight: 600;
+    color: #323130;
+    margin: 15px 0 6px 0;
+    font-size: 14px;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #8a8886;
+    border-radius: 2px;
+    font-size: 14px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+}
+
+input:focus, textarea:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.save-btn {
+    background: #0078d4;
+    color: white;
+    padding: 12px 30px;
+    border: none;
+    border-radius: 3px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.save-btn:hover {
+    background: #106ebe;
+}
+
+.info-message {
+    background: #e1f5fe;
+    border-left: 4px solid #0078d4;
+    padding: 15px 20px;
+    border-radius: 3px;
+    color: #323130;
+}
+
+@media (max-width: 768px) {
+    .details-card {
+        padding: 25px;
+    }
+}

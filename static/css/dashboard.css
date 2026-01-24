@@ -1,0 +1,164 @@
+/* Dashboard Styles - Corporate Professional */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    padding: 30px 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.top-nav {
+    background: #ffffff;
+    padding: 20px 40px;
+    margin-bottom: 30px;
+    border-bottom: 3px solid #0078d4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: 600;
+    color: #0078d4;
+}
+
+.nav-buttons a {
+    background: #0078d4;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.nav-buttons a:hover {
+    background: #106ebe;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #ffffff;
+    padding: 25px;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    text-align: center;
+}
+
+.stat-label {
+    color: #605e5c;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.stat-number {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #323130;
+}
+
+.stat-sold {
+    color: #107c10;
+}
+
+.stat-revenue {
+    grid-column: span 2;
+}
+
+.stat-revenue .stat-number {
+    color: #0078d4;
+    font-size: 2em;
+}
+
+.chart-section {
+    background: #ffffff;
+    padding: 30px;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.chart-section h2 {
+    color: #323130;
+    margin-bottom: 25px;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.progress-item {
+    margin-bottom: 20px;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    color: #323130;
+    font-size: 14px;
+}
+
+.progress-bar {
+    background: #f3f2f1;
+    height: 30px;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.progress-available {
+    background: #8a8886;
+}
+
+.progress-viewing {
+    background: #0078d4;
+}
+
+.progress-reserved {
+    background: #ffaa44;
+}
+
+.progress-sold {
+    background: #107c10;
+}
+
+.empty-message {
+    color: #8a8886;
+    text-align: center;
+    padding: 20px;
+}
+
+@media (max-width: 768px) {
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .stat-revenue {
+        grid-column: span 1;
+    }
+}

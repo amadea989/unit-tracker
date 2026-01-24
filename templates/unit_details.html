@@ -2,117 +2,57 @@
 <html>
 <head>
     <title>Unit Details - {{ unit.name }}</title>
-    <style>
-        body { font-family: Arial; margin: 40px; background-color: #f5f5f5; }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            background: white;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .header {
-            background: #2c3e50;
-            color: white;
-            padding: 15px;
-            border-radius: 4px;
-            margin-bottom: 20px;
-        }
-        .section {
-            margin: 20px 0;
-            padding: 15px;
-            background: #ecf0f1;
-            border-radius: 4px;
-        }
-        label { 
-            display: block; 
-            font-weight: bold; 
-            margin: 10px 0 5px 0; 
-        }
-        input, textarea {
-            width: 95%;
-            padding: 8px;
-            margin-bottom: 10px;
-            border: 1px solid #bdc3c7;
-            border-radius: 4px;
-        }
-        textarea { 
-            min-height: 100px; 
-            font-family: Arial;
-        }
-        button {
-            background: #27ae60;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        button:hover { background: #229954; }
-        .back-link {
-            display: inline-block;
-            margin-bottom: 20px;
-            color: #3498db;
-            text-decoration: none;
-        }
-        .back-link:hover { text-decoration: underline; }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-weight: bold;
-        }
-        .status-sold { background: #27ae60; color: white; }
-        .status-reserved { background: #f39c12; color: white; }
-        .status-viewing { background: #3498db; color: white; }
-        .status-available { background: #95a5a6; color: white; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/unit_details.css') }}">
 </head>
 <body>
     <div class="container">
-        <a href="/" class="back-link">← Back to Dashboard</a>
-        
-        <div class="header">
-            <h1>{{ unit.name }}</h1>
-            <p>Project: {{ project.name }}</p>
-            <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
+        <div class="back-nav">
+            <a href="/" class="back-link">Back to Dashboard</a>
         </div>
-
-        <form method="POST" action="/update_details/{{ unit.id }}">
-            
-            <!-- Buyer Information Section -->
-            {% if unit.status == 'Sold' %}
-            <div class="section">
-                <h2>Buyer Information</h2>
-                <label>Buyer Name:</label>
-                <input type="text" name="buyer_name" value="{{ unit.buyer_name or '' }}" placeholder="Full name of buyer">
-                
-                <label>Phone Number:</label>
-                <input type="text" name="buyer_phone" value="{{ unit.buyer_phone or '' }}" placeholder="+230 XXXX XXXX">
-                
-                <label>Email:</label>
-                <input type="email" name="buyer_email" value="{{ unit.buyer_email or '' }}" placeholder="buyer@example.com">
-                
-                <label>Sale Price:</label>
-                <input type="text" name="sale_price" value="{{ unit.sale_price or '' }}" placeholder="MUR 5,000,000">
-            </div>
-            {% else %}
-            <div class="section">
-                <p><em>Buyer information will be available once unit status is set to "Sold".</em></p>
-            </div>
-            {% endif %}
-
-            <!-- Notes/Progress Section -->
-            <div class="section">
-                <h2>Notes & Progress</h2>
-                <label>Comments/Updates:</label>
-                <textarea name="notes" placeholder="Add notes about progress, issues, documents received, etc.">{{ unit.notes or '' }}</textarea>
+        
+        <div class="details-card">
+            <div class="header">
+                <h1>{{ unit.name }}</h1>
+                <p class="project-name">Project: {{ project.name }}</p>
+                <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
             </div>
 
-            <button type="submit">Save Changes</button>
-        </form>
+            <form method="POST" action="/update_details/{{ unit.id }}">
+                
+                {% if unit.status == 'Sold' %}
+                <div class="section">
+                    <h2>Buyer Information</h2>
+                    
+                    <label>Buyer Name</label>
+                    <input type="text" name="buyer_name" value="{{ unit.buyer_name or '' }}" placeholder="Full name of buyer">
+                    
+                    <label>Phone Number</label>
+                    <input type="text" name="buyer_phone" value="{{ unit.buyer_phone or '' }}" placeholder="+230 XXXX XXXX">
+                    
+                    <label>Email Address</label>
+                    <input type="email" name="buyer_email" value="{{ unit.buyer_email or '' }}" placeholder="buyer@example.com">
+                    
+                    <label>Sale Price</label>
+                    <input type="text" name="sale_price" value="{{ unit.sale_price or '' }}" placeholder="MUR 5,000,000">
+                </div>
+                {% else %}
+                <div class="section">
+                    <div class="info-message">
+                        Buyer information will be available once unit status is set to "Sold"
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="section">
+                    <h2>Notes & Progress Updates</h2>
+                    <label>Comments, Updates, or Additional Information</label>
+                    <textarea name="notes" placeholder="Add notes about progress, issues, documents received, payments, etc.">{{ unit.notes or '' }}</textarea>
+                </div>
+
+                <button type="submit" class="save-btn">Save Changes</button>
+            </form>
+        </div>
     </div>
 </body>
 </html>

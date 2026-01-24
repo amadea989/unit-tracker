@@ -1,0 +1,348 @@
+/* Corporate Professional Design */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    background: #f0f2f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+/* Top Navigation */
+.top-nav {
+    background: #ffffff;
+    padding: 20px 40px;
+    margin-bottom: 30px;
+    border-bottom: 3px solid #0078d4;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+
+.logo {
+    font-size: 1.5em;
+    font-weight: 600;
+    color: #0078d4;
+}
+
+.nav-buttons a {
+    background: #0078d4;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 3px;
+    font-weight: 500;
+    margin-left: 10px;
+    display: inline-block;
+    transition: background 0.2s ease;
+}
+
+.nav-buttons a:hover {
+    background: #106ebe;
+}
+
+.logout-btn {
+    background: #d13438 !important;
+}
+
+.logout-btn:hover {
+    background: #a4262c !important;
+}
+
+/* Add Project Section */
+.add-project-section {
+    background: #ffffff;
+    padding: 25px 30px;
+    margin-bottom: 25px;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.add-project-section h2 {
+    color: #323130;
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.add-project-section input,
+.add-project-section button {
+    padding: 10px 15px;
+    border: 1px solid #8a8886;
+    border-radius: 2px;
+    font-size: 14px;
+    margin-right: 10px;
+}
+
+.add-project-section input {
+    width: 350px;
+}
+
+.add-project-section input:focus {
+    outline: none;
+    border-color: #0078d4;
+}
+
+.add-project-section button {
+    background: #0078d4;
+    color: white;
+    border: 1px solid #0078d4;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.add-project-section button:hover {
+    background: #106ebe;
+}
+
+/* Project Cards */
+.project-card {
+    background: #ffffff;
+    padding: 0;
+    margin-bottom: 25px;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.project-header {
+    background: #faf9f8;
+    padding: 20px 30px;
+    border-bottom: 2px solid #e1e1e1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-header h2 {
+    color: #323130;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.delete-project-btn {
+    background: #d13438;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.delete-project-btn:hover {
+    background: #a4262c;
+}
+
+/* Add Unit Form */
+.add-unit-form {
+    background: #f3f2f1;
+    padding: 20px 30px;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.add-unit-form h3 {
+    color: #323130;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.add-unit-form input,
+.add-unit-form select,
+.add-unit-form button {
+    padding: 8px 12px;
+    border: 1px solid #8a8886;
+    border-radius: 2px;
+    margin-right: 10px;
+    font-size: 14px;
+}
+
+.add-unit-form input {
+    width: 220px;
+}
+
+.add-unit-form button {
+    background: #107c10;
+    color: white;
+    border: 1px solid #107c10;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.add-unit-form button:hover {
+    background: #0b5a08;
+}
+
+/* Units Section */
+.units-section {
+    padding: 25px 30px;
+}
+
+.units-section h3 {
+    color: #323130;
+    margin-bottom: 15px;
+    font-size: 1.15em;
+    font-weight: 600;
+}
+
+/* Table Styles */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+
+th {
+    background: #f3f2f1;
+    color: #323130;
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #e1e1e1;
+}
+
+td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #edebe9;
+}
+
+tr:hover td {
+    background: #faf9f8;
+}
+
+.unit-link {
+    color: #0078d4;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.unit-link:hover {
+    text-decoration: underline;
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 2px;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-available {
+    background: #edebe9;
+    color: #605e5c;
+}
+
+.status-viewing {
+    background: #c7e0f4;
+    color: #004578;
+}
+
+.status-reserved {
+    background: #fff4ce;
+    color: #8a6116;
+}
+
+.status-sold {
+    background: #dff6dd;
+    color: #0b6a0b;
+}
+
+/* Buttons */
+.update-form select {
+    padding: 6px 10px;
+    border: 1px solid #8a8886;
+    border-radius: 2px;
+    margin-right: 8px;
+    font-size: 13px;
+}
+
+.update-btn {
+    background: #0078d4;
+    color: white;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.update-btn:hover {
+    background: #106ebe;
+}
+
+.delete-btn {
+    background: #d13438;
+    color: white;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.delete-btn:hover {
+    background: #a4262c;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #8a8886;
+}
+
+.empty-state h3 {
+    color: #605e5c;
+    margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .top-nav {
+        flex-direction: column;
+        padding: 20px;
+    }
+    
+    .nav-buttons {
+        margin-top: 15px;
+    }
+    
+    .add-project-section input {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .add-unit-form input,
+    .add-unit-form select {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    table {
+        font-size: 13px;
+    }
+}

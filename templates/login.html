@@ -2,91 +2,31 @@
 <html>
 <head>
     <title>Login - Unit Tracker</title>
-    <style>
-        body {
-            font-family: Arial;
-            margin: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .login-container {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            width: 350px;
-        }
-        h1 {
-            text-align: center;
-            color: #2c3e50;
-            margin-bottom: 30px;
-        }
-        .logo {
-            text-align: center;
-            font-size: 4em;
-            margin-bottom: 20px;
-        }
-        input[type="password"] {
-            width: 93%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #ecf0f1;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        input[type="password"]:focus {
-            outline: none;
-            border-color: #667eea;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        button:hover {
-            background: #5568d3;
-        }
-        .error {
-            background: #e74c3c;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            text-align: center;
-        }
-        .hint {
-            text-align: center;
-            color: #95a5a6;
-            font-size: 0.9em;
-            margin-top: 15px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
 </head>
 <body>
     <div class="login-container">
-        <div class="logo">🏢</div>
-        <h1>Unit Tracker</h1>
-        
-        {% if error %}
-        <div class="error">{{ error }}</div>
-        {% endif %}
-        
-        <form method="POST">
-            <input type="password" name="password" placeholder="Enter password" required autofocus>
-            <button type="submit">Login</button>
-        </form>
-        
-        <div class="hint">Default password: admin123</div>
+        <div class="login-card">
+            <div class="logo-section">
+                <h1>Unit Progress Tracker</h1>
+                <p>Real Estate Management System</p>
+            </div>
+            
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+            
+            <form method="POST">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter your password" required autofocus>
+                <button type="submit">Sign In</button>
+            </form>
+            
+            <div class="footer-note">
+                For demonstration: password is <strong>admin123</strong>
+            </div>
+        </div>
     </div>
 </body>
 </html>
