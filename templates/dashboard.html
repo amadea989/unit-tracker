@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - Unit Tracker</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.5em;
+        }
+        .nav {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .nav a {
+            background: white;
+            color: #667eea;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 0 10px;
+        }
+        .nav a:hover {
+            background: #f0f0f0;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-available { color: #95a5a6; }
+        .stat-viewing { color: #3498db; }
+        .stat-reserved { color: #f39c12; }
+        .stat-sold { color: #27ae60; }
+        .stat-revenue { color: #8e44ad; }
+        .stat-projects { color: #2c3e50; }
+        .stat-total { color: #e74c3c; }
+        
+        .chart-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .progress-bar {
+            background: #ecf0f1;
+            border-radius: 10px;
+            height: 30px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Dashboard Overview</h1>
+        
+        <div class="nav">
+            <a href="/">← Back to Projects</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Projects</div>
+                <div class="stat-number stat-projects">{{ stats.total_projects }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Total Units</div>
+                <div class="stat-number stat-total">{{ stats.total_units }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Available</div>
+                <div class="stat-number stat-available">{{ stats.available }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Viewing</div>
+                <div class="stat-number stat-viewing">{{ stats.viewing }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Reserved</div>
+                <div class="stat-number stat-reserved">{{ stats.reserved }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Sold</div>
+                <div class="stat-number stat-sold">{{ stats.sold }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-label">Total Revenue</div>
+                <div class="stat-number stat-revenue">
+                    {% if stats.total_revenue > 0 %}
+                        MUR {{ "{:,.0f}".format(stats.total_revenue) }}
+                    {% else %}
+                        MUR 0
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-section">
+            <h2>Unit Status Breakdown</h2>
+            {% if stats.total_units > 0 %}
+                <div style="margin: 20px 0;">
+                    <strong>Available:</strong>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (stats.available / stats.total_units * 100)|round }}%; background: #95a5a6;">
+                            {{ stats.available }} ({{ (stats.available / stats.total_units * 100)|round }}%)
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <strong>Viewing:</strong>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (stats.viewing / stats.total_units * 100)|round }}%; background: #3498db;">
+                            {{ stats.viewing }} ({{ (stats.viewing / stats.total_units * 100)|round }}%)
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <strong>Reserved:</strong>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (stats.reserved / stats.total_units * 100)|round }}%; background: #f39c12;">
+                            {{ stats.reserved }} ({{ (stats.reserved / stats.total_units * 100)|round }}%)
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin: 20px 0;">
+                    <strong>Sold:</strong>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (stats.sold / stats.total_units * 100)|round }}%; background: #27ae60;">
+                            {{ stats.sold }} ({{ (stats.sold / stats.total_units * 100)|round }}%)
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p>No units to display yet.</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

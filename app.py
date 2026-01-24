@@ -67,6 +67,48 @@ def home():
     conn.close()
     return render_template('index.html', projects=projects)
 
+@app.route('/dashboard')
+def dashboard():
+    conn = get_db()
+    
+    # Get total counts
+    total_projects = conn.execute('SELECT COUNT(*) as count FROM projects').fetchone()['count']
+    total_units = conn.execute('SELECT COUNT(*) as count FROM units').fetchone()['count']
+    
+    # Get units by status
+    available = conn.execute('SELECT COUNT(*) as count FROM units WHERE status = "Available"').fetchone()['count']
+    viewing = conn.execute('SELECT COUNT(*) as count FROM units WHERE status = "Viewing"').fetchone()['count']
+    reserved = conn.execute('SELECT COUNT(*) as count FROM units WHERE status = "Reserved"').fetchone()['count']
+    sold = conn.execute('SELECT COUNT(*) as count FROM units WHERE status = "Sold"').fetchone()['count']
+    
+    # Calculate total revenue from sold units
+    revenue_data = conn.execute('SELECT sale_price FROM units WHERE status = "Sold" AND sale_price IS NOT NULL').fetchall()
+    
+    # Parse revenue (remove "MUR" and commas, convert to number)
+    total_revenue = 0
+    for row in revenue_data:
+        if row['sale_price']:
+            # Remove "MUR", spaces, and commas, then convert to float
+            price_str = row['sale_price'].replace('MUR', '').replace(',', '').replace(' ', '').strip()
+            try:
+                total_revenue += float(price_str)
+            except:
+                pass  # Skip if can't convert
+    
+    conn.close()
+    
+    stats = {
+        'total_projects': total_projects,
+        'total_units': total_units,
+        'available': available,
+        'viewing': viewing,
+        'reserved': reserved,
+        'sold': sold,
+        'total_revenue': total_revenue
+    }
+    
+    return render_template('dashboard.html', stats=stats)
+
 @app.route('/add_project', methods=['POST'])
 def add_project():
     project_name = request.form['project_name']
