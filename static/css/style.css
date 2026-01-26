@@ -191,6 +191,7 @@ body {
 /* Units Section */
 .units-section {
     padding: 25px 30px;
+    background: white;
 }
 
 .units-section h3 {

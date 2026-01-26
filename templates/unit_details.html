@@ -16,14 +16,130 @@
                 <h1>{{ unit.name }}</h1>
                 <p class="project-name">Project: {{ project.name }}</p>
                 <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
+                
+                <!-- Status change form -->
+                <form method="POST" action="/update_status/{{ unit.id }}" style="margin-top: 15px;">
+                    <label style="font-size: 13px; font-weight: 600; margin-right: 10px;">Change Status:</label>
+                    <select name="new_status" style="padding: 8px; margin-right: 10px;">
+                        <option value="Available" {% if unit.status == 'Available' %}selected{% endif %}>Available</option>
+                        <option value="Viewing" {% if unit.status == 'Viewing' %}selected{% endif %}>Viewing</option>
+                        <option value="Reserved" {% if unit.status == 'Reserved' %}selected{% endif %}>Reserved</option>
+                        <option value="Sold" {% if unit.status == 'Sold' %}selected{% endif %}>Sold</option>
+                    </select>
+                    <button type="submit" style="padding: 8px 16px; background: #0078d4; color: white; border: none; border-radius: 3px; cursor: pointer;">Update Status</button>
+                </form>
             </div>
 
-            <form method="POST" action="/update_details/{{ unit.id }}">
+            <!-- Unit Specifications Section -->
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Unit Specifications</h2>
+                    {% if request.args.get('edit_specs') != 'true' %}
+                    <a href="?edit_specs=true" style="background: #0078d4; color: white; padding: 8px 16px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: 600;">Edit</a>
+                    {% endif %}
+                </div>
                 
-                {% if unit.status == 'Sold' %}
-                <div class="section">
-                    <h2>Buyer Information</h2>
+                {% if request.args.get('edit_specs') == 'true' %}
+                <!-- EDIT MODE -->
+                <form method="POST" action="/update_specs/{{ unit.id }}">
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                        <div>
+                            <label>Size (sqm)</label>
+                            <input type="number" step="0.01" name="size_sqm" value="{{ unit.size_sqm or '' }}" placeholder="e.g., 85.5">
+                        </div>
+                        
+                        <div>
+                            <label>Bedrooms</label>
+                            <input type="number" name="bedrooms" value="{{ unit.bedrooms or '' }}" placeholder="e.g., 2">
+                        </div>
+                        
+                        <div>
+                            <label>Bathrooms</label>
+                            <input type="number" name="bathrooms" value="{{ unit.bathrooms or '' }}" placeholder="e.g., 1">
+                        </div>
+                        
+                        <div>
+                            <label>Floor</label>
+                            <select name="floor_number">
+                                <option value="">Select floor</option>
+                                <option value="Ground" {% if unit.floor_number == 'Ground' %}selected{% endif %}>Ground Floor</option>
+                                <option value="First" {% if unit.floor_number == 'First' %}selected{% endif %}>First Floor</option>
+                                <option value="Second" {% if unit.floor_number == 'Second' %}selected{% endif %}>Second Floor</option>
+                                <option value="Third" {% if unit.floor_number == 'Third' %}selected{% endif %}>Third Floor</option>
+                                <option value="Fourth" {% if unit.floor_number == 'Fourth' %}selected{% endif %}>Fourth Floor</option>
+                                <option value="Fifth" {% if unit.floor_number == 'Fifth' %}selected{% endif %}>Fifth Floor</option>
+                                <option value="Sixth" {% if unit.floor_number == 'Sixth' %}selected{% endif %}>Sixth Floor</option>
+                                <option value="Seventh" {% if unit.floor_number == 'Seventh' %}selected{% endif %}>Seventh Floor</option>
+                            </select>
+                        </div>
+                        
+                        <div style="grid-column: span 2;">
+                            <label>Asking Price</label>
+                            <input type="text" name="selling_price" value="{{ unit.selling_price or '' }}" placeholder="MUR 5,000,000">
+                        </div>
+                    </div>
                     
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="submit" class="save-btn" style="flex: 1;">Save Changes</button>
+                        <a href="/unit/{{ unit.id }}" style="flex: 1; background: #8a8886; color: white; padding: 12px; text-align: center; text-decoration: none; border-radius: 3px; font-weight: 600;">Cancel</a>
+                    </div>
+                </form>
+                {% else %}
+                <!-- VIEW MODE -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Size:</span>
+                        <span class="info-value">
+                            {% if unit.size_sqm %}
+                                {{ "{:,.2f}".format(unit.size_sqm) }} m²
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Bedrooms:</span>
+                        <span class="info-value">{{ unit.bedrooms or 'Not specified' }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Bathrooms:</span>
+                        <span class="info-value">{{ unit.bathrooms or 'Not specified' }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Floor:</span>
+                        <span class="info-value">{{ unit.floor_number or 'Not specified' }}</span>
+                    </div>
+                    
+                    <div class="info-item" style="grid-column: span 2;">
+                        <span class="info-label">Asking Price:</span>
+                        <span class="info-value">
+                            {% if unit.selling_price %}
+                                MUR {{ "{:,}".format(unit.selling_price|int) if unit.selling_price.isdigit() else unit.selling_price }}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Buyer Information Section (Only if Sold) -->
+            {% if unit.status == 'Sold' %}
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>Buyer Information</h2>
+                    {% if request.args.get('edit_buyer') != 'true' %}
+                    <a href="?edit_buyer=true" style="background: #0078d4; color: white; padding: 8px 16px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: 600;">Edit</a>
+                    {% endif %}
+                </div>
+                
+                {% if request.args.get('edit_buyer') == 'true' %}
+                <!-- EDIT MODE -->
+                <form method="POST" action="/update_buyer/{{ unit.id }}">
                     <label>Buyer Name</label>
                     <input type="text" name="buyer_name" value="{{ unit.buyer_name or '' }}" placeholder="Full name of buyer">
                     
@@ -35,23 +151,78 @@
                     
                     <label>Sale Price</label>
                     <input type="text" name="sale_price" value="{{ unit.sale_price or '' }}" placeholder="MUR 5,000,000">
-                </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="submit" class="save-btn" style="flex: 1;">Save Changes</button>
+                        <a href="/unit/{{ unit.id }}" style="flex: 1; background: #8a8886; color: white; padding: 12px; text-align: center; text-decoration: none; border-radius: 3px; font-weight: 600;">Cancel</a>
+                    </div>
+                </form>
                 {% else %}
-                <div class="section">
-                    <div class="info-message">
-                        Buyer information will be available once unit status is set to "Sold"
+                <!-- VIEW MODE -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">Buyer Name:</span>
+                        <span class="info-value">{{ unit.buyer_name or 'Not provided' }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Phone:</span>
+                        <span class="info-value">{{ unit.buyer_phone or 'Not provided' }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Email:</span>
+                        <span class="info-value">{{ unit.buyer_email or 'Not provided' }}</span>
+                    </div>
+                    
+                    <div class="info-item">
+                        <span class="info-label">Sale Price:</span>
+                        <span class="info-value">
+                            {% if unit.sale_price %}
+                                MUR {{ "{:,}".format(unit.sale_price|int) if unit.sale_price.isdigit() else unit.sale_price }}
+                            {% else %}
+                                Not provided
+                            {% endif %}
+                        </span>
                     </div>
                 </div>
                 {% endif %}
+            </div>
+            {% else %}
+            <div class="section">
+                <div class="info-message">
+                    Buyer information will be available once unit status is set to "Sold"
+                </div>
+            </div>
+            {% endif %}
 
-                <div class="section">
+            <!-- Notes Section -->
+            <div class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h2>Notes & Progress Updates</h2>
+                    {% if request.args.get('edit_notes') != 'true' %}
+                    <a href="?edit_notes=true" style="background: #0078d4; color: white; padding: 8px 16px; text-decoration: none; border-radius: 3px; font-size: 14px; font-weight: 600;">Edit</a>
+                    {% endif %}
+                </div>
+                
+                {% if request.args.get('edit_notes') == 'true' %}
+                <!-- EDIT MODE -->
+                <form method="POST" action="/update_notes/{{ unit.id }}">
                     <label>Comments, Updates, or Additional Information</label>
                     <textarea name="notes" placeholder="Add notes about progress, issues, documents received, payments, etc.">{{ unit.notes or '' }}</textarea>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="submit" class="save-btn" style="flex: 1;">Save Changes</button>
+                        <a href="/unit/{{ unit.id }}" style="flex: 1; background: #8a8886; color: white; padding: 12px; text-align: center; text-decoration: none; border-radius: 3px; font-weight: 600;">Cancel</a>
+                    </div>
+                </form>
+                {% else %}
+                <!-- VIEW MODE -->
+                <div class="notes-display">
+                    {{ unit.notes or 'No notes added yet.' }}
                 </div>
-
-                <button type="submit" class="save-btn">Save Changes</button>
-            </form>
+                {% endif %}
+            </div>
         </div>
     </div>
 </body>

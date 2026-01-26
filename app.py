@@ -26,6 +26,11 @@ def init_db():
             project_id INTEGER,
             name TEXT NOT NULL,
             status TEXT NOT NULL,
+            size_sqm REAL,
+            bedrooms INTEGER,
+            bathrooms INTEGER,
+            floor_number TEXT,
+            selling_price TEXT,
             buyer_name TEXT,
             buyer_phone TEXT,
             buyer_email TEXT,
@@ -226,6 +231,69 @@ def delete_project(project_id):
     conn.commit()
     conn.close()
     return redirect(url_for('home'))
+
+# Route to update unit status from unit details page
+@app.route('/update_status/<int:unit_id>', methods=['POST'])
+def update_status(unit_id):
+    new_status = request.form['new_status']
+    
+    conn = get_db()
+    conn.execute('UPDATE units SET status = ? WHERE id = ?', (new_status, unit_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('unit_details', unit_id=unit_id))
+
+# Route to update unit specifications
+@app.route('/update_specs/<int:unit_id>', methods=['POST'])
+def update_specs(unit_id):
+    size_sqm = request.form.get('size_sqm', None)
+    bedrooms = request.form.get('bedrooms', None)
+    bathrooms = request.form.get('bathrooms', None)
+    floor_number = request.form.get('floor_number', '')
+    selling_price = request.form.get('selling_price', '')
+    
+    conn = get_db()
+    conn.execute('''
+        UPDATE units 
+        SET size_sqm = ?, bedrooms = ?, bathrooms = ?, floor_number = ?, selling_price = ?
+        WHERE id = ?
+    ''', (size_sqm, bedrooms, bathrooms, floor_number, selling_price, unit_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('unit_details', unit_id=unit_id))
+
+# Route to update buyer information
+@app.route('/update_buyer/<int:unit_id>', methods=['POST'])
+def update_buyer(unit_id):
+    buyer_name = request.form.get('buyer_name', '')
+    buyer_phone = request.form.get('buyer_phone', '')
+    buyer_email = request.form.get('buyer_email', '')
+    sale_price = request.form.get('sale_price', '')
+    
+    conn = get_db()
+    conn.execute('''
+        UPDATE units 
+        SET buyer_name = ?, buyer_phone = ?, buyer_email = ?, sale_price = ?
+        WHERE id = ?
+    ''', (buyer_name, buyer_phone, buyer_email, sale_price, unit_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('unit_details', unit_id=unit_id))
+
+# Route to update notes
+@app.route('/update_notes/<int:unit_id>', methods=['POST'])
+def update_notes(unit_id):
+    notes = request.form.get('notes', '')
+    
+    conn = get_db()
+    conn.execute('UPDATE units SET notes = ? WHERE id = ?', (notes, unit_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('unit_details', unit_id=unit_id))
 
 if __name__ == '__main__':
     import os

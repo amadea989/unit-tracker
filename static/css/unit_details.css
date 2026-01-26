@@ -165,3 +165,48 @@ textarea {
         padding: 25px;
     }
 }
+
+/* Info Grid for View Mode */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.info-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #605e5c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.info-value {
+    font-size: 15px;
+    color: #323130;
+    font-weight: 500;
+}
+
+/* Notes Display */
+.notes-display {
+    background: white;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #edebe9;
+    min-height: 100px;
+    white-space: pre-wrap;
+    color: #323130;
+    line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+}
