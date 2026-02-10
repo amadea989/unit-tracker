@@ -1,110 +1,130 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Unit Progress Tracker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <div class="top-nav">
-            <div class="logo">Unit Progress Tracker</div>
-            <div class="nav-buttons">
-                <a href="/dashboard">Dashboard</a>
-                <a href="/logout" class="logout-btn">Logout</a>
+    <head>
+        <title>Unit Progress Tracker</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head>
+    <body>
+        <div class="container">
+            <div class="top-nav">
+                <div class="logo">Unit Progress Tracker</div>
+                <div class="nav-buttons">
+                    <a href="/dashboard">Dashboard</a>
+                    <a href="/logout" class="logout-btn">Logout</a>
+                </div>
             </div>
-        </div>
 
-        <div class="add-project-section">
-            <h2>Create New Project</h2>
-            <form method="POST" action="/add_project">
-                <input type="text" name="project_name" placeholder="Enter project name (e.g., Sunset Apartments)" required>
-                <button type="submit">Create Project</button>
-            </form>
-        </div>
+            <div class="add-project-section">
+                <h2>Create New Project</h2>
+                <form method="POST" action="/add_project">
+                    <input type="text" name="project_name" placeholder="Enter project name (e.g., Sunset Apartments)" required>
+                    <button type="submit">Create Project</button>
+                </form>
+            </div>
 
-        {% if projects %}
-            {% for project in projects %}
-            <div class="project-card">
-                <div class="project-header">
-                    <h2>{{ project.name }}</h2>
-                    <form method="POST" action="/delete_project/{{ project.id }}" style="display: inline;" onsubmit="return confirm('Delete entire project and all units?');">
-                        <button type="submit" class="delete-project-btn">Delete Project</button>
-                    </form>
-                </div>
-
-                <div class="add-unit-form">
-                    <h3>Add Unit to {{ project.name }}</h3>
-                    <form method="POST" action="/add_unit/{{ project.id }}">
-                        <input type="text" name="unit_name" placeholder="Unit name/number" required>
-                        <select name="status">
-                            <option value="Available">Available</option>
-                            <option value="Viewing">Viewing</option>
-                            <option value="Reserved">Reserved</option>
-                            <option value="Sold">Sold</option>
-                        </select>
-                        <button type="submit">Add Unit</button>
-                    </form>
-                </div>
-
-
-                <div class="units-section">
-                    <h3>Units ({{ project.units|length }})</h3>
-                    {% if project.units %}
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Unit Name</th>
-                                <th>Status</th>
-                                <th>Update Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for unit in project.units %}
-                            <tr>
-                                <td>
-                                    <a href="/unit/{{ unit.id }}" class="unit-link">{{ unit.name }}</a>
-                                </td>
-                                <td>
-                                    <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
-                                </td>
-                                <td>
-                                    <form method="POST" action="/update/{{ project.id }}/{{ unit.id }}" class="update-form" style="display:inline;">
-                                        <select name="new_status">
-                                            <option value="Available" {% if unit.status == 'Available' %}selected{% endif %}>Available</option>
-                                            <option value="Viewing" {% if unit.status == 'Viewing' %}selected{% endif %}>Viewing</option>
-                                            <option value="Reserved" {% if unit.status == 'Reserved' %}selected{% endif %}>Reserved</option>
-                                            <option value="Sold" {% if unit.status == 'Sold' %}selected{% endif %}>Sold</option>
-                                        </select>
-                                        <button type="submit" class="update-btn">Update</button>
-                                    </form>
-                                </td>
-                                <td>
-                                    <form method="POST" action="/delete_unit/{{ unit.id }}" style="display:inline;" onsubmit="return confirm('Delete this unit?');">
-                                        <button type="submit" class="delete-btn">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <div class="empty-state">
-                        <p>No units in this project yet. Add one above.</p>
+            {% if projects %}
+                {% for project in projects %}
+                <div class="project-card">
+                    <div class="project-header">
+                        <h2>{{ project.name }}</h2>
+                        <form method="POST" action="/delete_project/{{ project.id }}" style="display: inline;" onsubmit="return confirm('Delete entire project and all units?');">
+                            <button type="submit" class="delete-project-btn">Delete Project</button>
+                        </form>
                     </div>
-                    {% endif %}
+
+
+                    <div class="project-content" id="project-content-{{ project.id }}"></div>
+                        <div class="add-unit-form">
+                            <h3>Add Unit to {{ project.name }}</h3>
+                            <form method="POST" action="/add_unit/{{ project.id }}">
+                                <input type="text" name="unit_name" placeholder="Unit name/number" required>
+                                <select name="status">
+                                    <option value="Available">Available</option>
+                                    <option value="Viewing">Viewing</option>
+                                    <option value="Reserved">Reserved</option>
+                                    <option value="Sold">Sold</option>
+                                </select>
+                            <button type="submit">Add Unit</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                    <!-- CSV Import Section -->
+                    <div class="csv-import-section">
+                        <h3>Import Units from CSV</h3>
+                        <form method="POST" action="/import_units/{{ project.id }}" enctype="multipart/form-data">
+                            <input type="file" name="csv_file" accept=".csv" required>
+                            <button type="submit">Import CSV</button>
+                        </form>
+                        <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">
+                            CSV format: unit_name, size_sqm, bedrooms, bathrooms, floor_number, selling_price, status
+                            <a href="/download_template" style="color: #0078d4;">Download template</a>
+                        </p>
+                    </div>
+
+                    <div class="units-section">
+
+
+                    <div class="units-section">
+                        <h3>Units ({{ project.units|length }})</h3>
+                        {% if project.units %}
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Unit Name</th>
+                                    <th>Status</th>
+                                    <th>Update Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in project.units %}
+                                <tr>
+                                    <td>
+                                        <a href="/unit/{{ unit.id }}" class="unit-link">{{ unit.name }}</a>
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="/update/{{ project.id }}/{{ unit.id }}" class="update-form" style="display:inline;">
+                                            <select name="new_status">
+                                                <option value="Available" {% if unit.status == 'Available' %}selected{% endif %}>Available</option>
+                                                <option value="Viewing" {% if unit.status == 'Viewing' %}selected{% endif %}>Viewing</option>
+                                                <option value="Reserved" {% if unit.status == 'Reserved' %}selected{% endif %}>Reserved</option>
+                                                <option value="Sold" {% if unit.status == 'Sold' %}selected{% endif %}>Sold</option>
+                                            </select>
+                                            <button type="submit" class="update-btn">Update</button>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        <form method="POST" action="/delete_unit/{{ unit.id }}" style="display:inline;" onsubmit="return confirm('Delete this unit?');">
+                                            <button type="submit" class="delete-btn">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="empty-state">
+                            <p>No units in this project yet. Add one above.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <div class="project-card">
+                <div class="empty-state">
+                    <h3>No Projects Yet</h3>
+                    <p>Create your first project above to get started.</p>
                 </div>
             </div>
-            {% endfor %}
-        {% else %}
-        <div class="project-card">
-            <div class="empty-state">
-                <h3>No Projects Yet</h3>
-                <p>Create your first project above to get started.</p>
-            </div>
+            {% endif %}
         </div>
-        {% endif %}
-    </div>
-</body>
+
+    </body>
 </html>

@@ -188,10 +188,47 @@ body {
     background: #0b5a08;
 }
 
+/* CSV Import Section */
+.csv-import-section {
+    background: #e8f4f8;
+    padding: 20px 30px;
+    border-bottom: 1px solid #e1e1e1;
+}
+
+.csv-import-section h3 {
+    color: #323130;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.csv-import-section input[type="file"] {
+    padding: 8px 12px;
+    border: 1px solid #8a8886;
+    border-radius: 2px;
+    margin-right: 10px;
+    font-size: 14px;
+    background: white;
+}
+
+.csv-import-section button {
+    background: #0078d4;
+    color: white;
+    padding: 8px 16px;
+    border: 1px solid #0078d4;
+    border-radius: 2px;
+    font-weight: 500;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.csv-import-section button:hover {
+    background: #106ebe;
+}
+
 /* Units Section */
 .units-section {
     padding: 25px 30px;
-    background: white;
 }
 
 .units-section h3 {
@@ -346,4 +383,37 @@ tr:hover td {
     table {
         font-size: 13px;
     }
+}
+
+/* Accordion Styles */
+.project-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.project-header:hover {
+    background: #edebe9;
+}
+
+.accordion-icon {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    margin-right: 10px;
+}
+
+.project-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+}
+
+.project-content.expanded {
+    max-height: 5000px; /* Large enough to fit any content */
+}
+
+/* Rotate icon when expanded */
+.project-content.expanded ~ .project-header .accordion-icon,
+.project-header:has(+ .project-content.expanded) .accordion-icon {
+    transform: rotate(180deg);
 }

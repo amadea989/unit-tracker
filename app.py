@@ -1,6 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, Response
 import sqlite3
 import json
+import csv
+import io
 
 app = Flask(__name__)
 app.secret_key = 'amadea' # Change this to something random
@@ -294,6 +296,81 @@ def update_notes(unit_id):
     conn.close()
     
     return redirect(url_for('unit_details', unit_id=unit_id))
+
+
+
+# Route to download CSV template
+@app.route('/download_template')
+def download_template():
+    
+    template = """unit_name,size_sqm,bedrooms,bathrooms,floor_number,selling_price,status
+A-101,85.5,2,1,Ground,5000000,Available
+A-102,85.5,2,1,First,5200000,Available
+B-101,120.0,3,2,Ground,7000000,Available"""
+    
+    return Response(
+        template,
+        mimetype="text/csv",
+        headers={"Content-disposition": "attachment; filename=unit_import_template.csv"}
+    )
+
+# Route to import units from CSV
+@app.route('/import_units/<int:project_id>', methods=['POST'])
+def import_units(project_id):
+    if 'csv_file' not in request.files:
+        return redirect(url_for('home'))
+    
+    file = request.files['csv_file']
+    
+    if file.filename == '':
+        return redirect(url_for('home'))
+    
+    if file and file.filename.endswith('.csv'):
+        try:
+            # Read CSV file
+            stream = io.StringIO(file.stream.read().decode("utf-8-sig"), newline=None)
+            csv_reader = csv.DictReader(stream)
+            
+            conn = get_db()
+            imported_count = 0
+            
+            for row in csv_reader:
+                # Get values from CSV, with defaults for optional fields
+                unit_name = row.get('unit_name', '').strip()
+                print(f"Processing row: {row}")
+                print(f"Unit name: {unit_name}")
+                size_sqm = row.get('size_sqm', '').strip() or None
+                bedrooms = row.get('bedrooms', '').strip() or None
+                bathrooms = row.get('bathrooms', '').strip() or None
+                floor_number = row.get('floor_number', '').strip()
+                selling_price = row.get('selling_price', '').strip()
+                status = row.get('status', 'Available').strip()
+                
+                # Validate required fields
+                if not unit_name:
+                    continue  # Skip rows without unit name
+                
+                # Insert into database
+                conn.execute('''
+                    INSERT INTO units (project_id, name, status, size_sqm, bedrooms, bathrooms, floor_number, selling_price)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (project_id, unit_name, status, size_sqm, bedrooms, bathrooms, floor_number, selling_price))
+                
+                imported_count += 1
+            
+            conn.commit()
+            conn.close()
+            
+            # You could add a flash message here to show success
+            # For now, just redirect back
+            return redirect(url_for('home'))
+            
+        except Exception as e:
+            # If there's an error, redirect back (in production, you'd show an error message)
+            print(f"Error importing CSV: {e}")
+            return redirect(url_for('home'))
+    
+    return redirect(url_for('home'))
 
 if __name__ == '__main__':
     import os
