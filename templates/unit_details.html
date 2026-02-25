@@ -13,14 +13,19 @@
         
         <div class="details-card">
             <div class="header">
-                <h1>{{ unit.name }}</h1>
-                <p class="project-name">Project: {{ project.name }}</p>
-                <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <h1>{{ unit.name }}</h1>
+                        <p class="project-name">Project: {{ project.name }}</p>
+                        <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
+                    </div>
+                    <button type="button" class="delete-unit-btn" onclick="showDeleteConfirm()">Delete Unit</button>
+                </div>
                 
                 <!-- Status change form -->
                 <form method="POST" action="/update_status/{{ unit.id }}" style="margin-top: 15px;">
                     <label style="font-size: 13px; font-weight: 600; margin-right: 10px;">Change Status:</label>
-                    <select name="new_status" style="padding: 8px; margin-right: 10px;">
+                    <select name="new_status" style="padding: 8px; margin-right: 10px; width: auto; min-width: 150px;">
                         <option value="Available" {% if unit.status == 'Available' %}selected{% endif %}>Available</option>
                         <option value="Viewing" {% if unit.status == 'Viewing' %}selected{% endif %}>Viewing</option>
                         <option value="Reserved" {% if unit.status == 'Reserved' %}selected{% endif %}>Reserved</option>
@@ -117,7 +122,7 @@
                         <span class="info-label">Asking Price:</span>
                         <span class="info-value">
                             {% if unit.selling_price %}
-                                MUR {{ "{:,}".format(unit.selling_price|int) if unit.selling_price.isdigit() else unit.selling_price }}
+                                {{ unit.selling_price }}
                             {% else %}
                                 Not specified
                             {% endif %}
@@ -177,13 +182,7 @@
                     
                     <div class="info-item">
                         <span class="info-label">Sale Price:</span>
-                        <span class="info-value">
-                            {% if unit.sale_price %}
-                                MUR {{ "{:,}".format(unit.sale_price|int) if unit.sale_price.isdigit() else unit.sale_price }}
-                            {% else %}
-                                Not provided
-                            {% endif %}
-                        </span>
+                        <span class="info-value">{{ unit.sale_price or 'Not provided' }}</span>
                     </div>
                 </div>
                 {% endif %}
@@ -225,5 +224,42 @@
             </div>
         </div>
     </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <h2>Delete Unit</h2>
+            <div class="modal-section">
+                <p style="font-size: 16px; color: #323130; margin-bottom: 20px;">
+                    Are you sure you want to delete <strong>{{ unit.name }}</strong>?
+                    <br><br>
+                    This action cannot be undone.
+                </p>
+                <div style="display: flex; gap: 10px;">
+                    <form method="POST" action="/delete_unit/{{ unit.id }}" style="flex: 1;">
+                        <button type="submit" class="confirm-delete-btn">Yes, Delete</button>
+                    </form>
+                    <button type="button" class="cancel-btn" onclick="closeDeleteConfirm()">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDeleteConfirm() {
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function closeDeleteConfirm() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('deleteModal');
+            if (event.target == modal) {
+                closeDeleteConfirm();
+            }
+        }
+    </script>
 </body>
 </html>

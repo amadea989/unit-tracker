@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ project.name }} - Project Overview</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/project_overview.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="back-nav">
+            <a href="/" class="back-link">← Back to All Projects</a>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <span class="flash-close" onclick="this.parentElement.style.display='none'">&times;</span>
+                    {{ message }}
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Project Header -->
+        <div class="project-main-header">
+            {% if request.args.get('edit_name') == 'true' %}
+            <!-- EDIT MODE -->
+            <form method="POST" action="/update_project_name/{{ project.id }}" style="display: flex; align-items: center; gap: 15px;">
+                <input type="text" name="project_name" value="{{ project.name }}" required style="font-size: 2.2em; font-weight: 600; padding: 8px 12px; border: 2px solid #0078d4; border-radius: 4px; flex: 1;">
+                <button type="submit" class="save-name-btn">Save</button>
+                <a href="/project/{{ project.id }}" class="cancel-name-btn">Cancel</a>
+            </form>
+            {% else %}
+            <!-- VIEW MODE -->
+            <div style="display: flex; justify-content: space-between; align-items: start;">
+                <div>
+                    <h1>{{ project.name }}</h1>
+                    <p class="project-subtitle">{{ details.location or 'Location not specified' }}</p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <a href="?edit_name=true" class="edit-name-btn">Edit Name</a>
+                    <button type="button" class="delete-project-btn-header" onclick="showDeleteProjectModal()">Delete Project</button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Units</div>
+                <div class="stat-number">{{ stats.total_units }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Available</div>
+                <div class="stat-number stat-available">{{ stats.available }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Viewing</div>
+                <div class="stat-number stat-viewing">{{ stats.viewing }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Reserved</div>
+                <div class="stat-number stat-reserved">{{ stats.reserved }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Sold</div>
+                <div class="stat-number stat-sold">{{ stats.sold }}</div>
+            </div>
+            <div class="stat-card stat-wide">
+                <div class="stat-label">Sales Progress</div>
+                <div class="stat-number">{{ "{:.1f}".format(stats.revenue_percentage) }}%</div>
+                <div class="progress-bar-mini">
+                    <div class="progress-fill-mini" style="width: {{ stats.revenue_percentage }}%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Project Details Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Project Details</h2>
+                        {% if request.args.get('edit') != 'details' %}
+                        <a href="?edit=details" class="edit-btn">Edit</a>
+                        {% endif %}
+                    </div>
+
+                    {% if request.args.get('edit') == 'details' %}
+                    <!-- EDIT MODE -->
+                    <form method="POST" action="/update_project_details/{{ project.id }}">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Location / Address</label>
+                                <input type="text" name="location" value="{{ details.location or '' }}" placeholder="e.g., Grand Baie, Mauritius">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Total Area (sqm)</label>
+                                <input type="number" step="0.01" name="total_area" value="{{ details.total_area or '' }}" placeholder="e.g., 5000">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Number of Floors</label>
+                                <input type="number" name="num_floors" value="{{ details.num_floors or '' }}" placeholder="e.g., 5">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Completion Date</label>
+                                <input type="date" name="completion_date" value="{{ details.completion_date or '' }}">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Construction Status</label>
+                                <select name="construction_status">
+                                    <option value="">Select status</option>
+                                    <option value="Planning" {% if details.construction_status == 'Planning' %}selected{% endif %}>Planning</option>
+                                    <option value="In Progress" {% if details.construction_status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="Completed" {% if details.construction_status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    <option value="On Hold" {% if details.construction_status == 'On Hold' %}selected{% endif %}>On Hold</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Developer Name</label>
+                                <input type="text" name="developer_name" value="{{ details.developer_name or '' }}" placeholder="e.g., ABC Construction Ltd">
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Developer Contact</label>
+                                <input type="text" name="developer_contact" value="{{ details.developer_contact or '' }}" placeholder="Email or phone">
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Project Description</label>
+                                <textarea name="description" rows="4" placeholder="Brief overview of the project">{{ details.description or '' }}</textarea>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Amenities (comma-separated)</label>
+                                <input type="text" name="amenities" value="{{ details.amenities or '' }}" placeholder="e.g., Swimming Pool, Gym, Parking, Security">
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Timeline / Milestones</label>
+                                <textarea name="timeline_notes" rows="3" placeholder="Key dates and milestones">{{ details.timeline_notes or '' }}</textarea>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn">Save Changes</button>
+                            <a href="/project/{{ project.id }}" class="cancel-btn">Cancel</a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <!-- VIEW MODE -->
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Location</span>
+                            <span class="info-value">{{ details.location or 'Not specified' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Total Area</span>
+                            <span class="info-value">{{ "{:,.0f}".format(details.total_area) if details.total_area else 'Not specified' }} {{ 'sqm' if details.total_area else '' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Floors</span>
+                            <span class="info-value">{{ details.num_floors or 'Not specified' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Completion Date</span>
+                            <span class="info-value">{{ details.completion_date or 'Not specified' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Status</span>
+                            <span class="info-value">{{ details.construction_status or 'Not specified' }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Developer</span>
+                            <span class="info-value">{{ details.developer_name or 'Not specified' }}</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Developer Contact</span>
+                            <span class="info-value">{{ details.developer_contact or 'Not specified' }}</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Description</span>
+                            <span class="info-value">{{ details.description or 'No description provided' }}</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Amenities</span>
+                            <span class="info-value">{{ details.amenities or 'Not specified' }}</span>
+                        </div>
+                        <div class="info-item full-width">
+                            <span class="info-label">Timeline</span>
+                            <span class="info-value">{{ details.timeline_notes or 'No timeline added' }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Documents Section -->
+                <div class="section">
+                    <div class="section-header">
+                        <h2>Documents & Plans</h2>
+                        {% if request.args.get('edit') != 'documents' %}
+                        <a href="?edit=documents" class="edit-btn">Edit</a>
+                        {% endif %}
+                    </div>
+
+                    {% if request.args.get('edit') == 'documents' %}
+                    <!-- EDIT MODE -->
+                    <form method="POST" action="/update_project_details/{{ project.id }}">
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label>Building Permit Link (Google Drive)</label>
+                                <input type="url" name="building_permit_link" value="{{ details.building_permit_link or '' }}" placeholder="https://drive.google.com/...">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Floor Plans Link</label>
+                                <input type="url" name="floor_plans_link" value="{{ details.floor_plans_link or '' }}" placeholder="https://drive.google.com/...">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Master Plan Link</label>
+                                <input type="url" name="master_plan_link" value="{{ details.master_plan_link or '' }}" placeholder="https://drive.google.com/...">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Certificates Link (Occupancy, Completion, etc.)</label>
+                                <input type="url" name="certificate_link" value="{{ details.certificate_link or '' }}" placeholder="https://drive.google.com/...">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Marketing Materials Link</label>
+                                <input type="url" name="marketing_materials_link" value="{{ details.marketing_materials_link or '' }}" placeholder="https://drive.google.com/...">
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Site Photos Link</label>
+                                <input type="url" name="site_photos_link" value="{{ details.site_photos_link or '' }}" placeholder="https://drive.google.com/...">
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="save-btn">Save Changes</button>
+                            <a href="/project/{{ project.id }}" class="cancel-btn">Cancel</a>
+                        </div>
+                    </form>
+                    {% else %}
+                    <!-- VIEW MODE -->
+                    <div class="documents-list">
+                        <div class="document-item">
+                            <span class="document-label">📄 Building Permit</span>
+                            {% if details.building_permit_link %}
+                                <a href="{{ details.building_permit_link }}" target="_blank" class="view-doc-btn">View Document</a>
+                            {% else %}
+                                <span class="no-doc">No document</span>
+                            {% endif %}
+                        </div>
+                        <div class="document-item">
+                            <span class="document-label">📐 Floor Plans</span>
+                            {% if details.floor_plans_link %}
+                                <a href="{{ details.floor_plans_link }}" target="_blank" class="view-doc-btn">View Document</a>
+                            {% else %}
+                                <span class="no-doc">No document</span>
+                            {% endif %}
+                        </div>
+                        <div class="document-item">
+                            <span class="document-label">🗺️ Master Plan</span>
+                            {% if details.master_plan_link %}
+                                <a href="{{ details.master_plan_link }}" target="_blank" class="view-doc-btn">View Document</a>
+                            {% else %}
+                                <span class="no-doc">No document</span>
+                            {% endif %}
+                        </div>
+                        <div class="document-item">
+                            <span class="document-label">✅ Certificates</span>
+                            {% if details.certificate_link %}
+                                <a href="{{ details.certificate_link }}" target="_blank" class="view-doc-btn">View Document</a>
+                            {% else %}
+                                <span class="no-doc">No document</span>
+                            {% endif %}
+                        </div>
+                        <div class="document-item">
+                            <span class="document-label">📢 Marketing Materials</span>
+                            {% if details.marketing_materials_link %}
+                                <a href="{{ details.marketing_materials_link }}" target="_blank" class="view-doc-btn">View Document</a>
+                            {% else %}
+                                <span class="no-doc">No document</span>
+                            {% endif %}
+                        </div>
+                        <div class="document-item">
+                            <span class="document-label">📸 Site Photos</span>
+                            {% if details.site_photos_link %}
+                                <a href="{{ details.site_photos_link }}" target="_blank" class="view-doc-btn">View Document</a>
+                            {% else %}
+                                <span class="no-doc">No document</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Financial Summary -->
+                <div class="section">
+                    <h2>Financial Summary</h2>
+                    <div class="financial-grid">
+                        <div class="financial-item">
+                            <span class="financial-label">Total Project Value</span>
+                            <span class="financial-value">MUR {{ "{:,.2f}".format(stats.total_value) }}</span>
+                        </div>
+                        <div class="financial-item">
+                            <span class="financial-label">Total Sold Value</span>
+                            <span class="financial-value">MUR {{ "{:,.2f}".format(stats.sold_value) }}</span>
+                        </div>
+                        <div class="financial-item">
+                            <span class="financial-label">Average Unit Price</span>
+                            <span class="financial-value">MUR {{ "{:,.2f}".format(stats.avg_price) }}</span>
+                        </div>
+                        <div class="financial-item">
+                            <span class="financial-label">Revenue %</span>
+                            <span class="financial-value">{{ "{:.1f}".format(stats.revenue_percentage) }}%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Units -->
+            <div class="right-column">
+                <div class="section">
+                    <h2>Units Overview ({{ stats.total_units }})</h2>
+                    
+                    {% if units %}
+                    <div class="units-grid-compact">
+                        {% for unit in units %}
+                        <a href="/unit/{{ unit.id }}" class="unit-tile-compact status-tile-{{ unit.status|lower }}">
+                            <div class="unit-tile-name">{{ unit.name }}</div>
+                            <div class="unit-tile-status">{{ unit.status }}</div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <p>No units in this project yet.</p>
+                        <a href="/" class="btn-primary">Add Units</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Project Confirmation Modal -->
+    <div id="deleteProjectModal" class="modal">
+        <div class="modal-content-danger">
+            <h2>⚠️ Delete Project</h2>
+            <div class="modal-section">
+                <p style="font-size: 16px; color: #323130; margin-bottom: 15px;">
+                    <strong>Warning:</strong> This will permanently delete the project "{{ project.name }}" and <strong>ALL {{ stats.total_units }} units</strong> in it.
+                </p>
+                <p style="font-size: 14px; color: #605e5c; margin-bottom: 20px;">
+                    This action cannot be undone.
+                </p>
+                
+                <form method="POST" action="/delete_project_full/{{ project.id }}">
+                    <div class="form-group">
+                        <label style="font-weight: 600; margin-bottom: 8px; display: block;">
+                            Type the project name to confirm: <strong>{{ project.name }}</strong>
+                        </label>
+                        <input type="text" name="confirmation_name" id="confirmationInput" placeholder="Type project name here" required style="width: 100%; padding: 10px; border: 2px solid #d13438; border-radius: 4px; font-size: 14px;">
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button type="submit" class="confirm-delete-project-btn" id="confirmDeleteBtn" disabled>Yes, Delete Forever</button>
+                        <button type="button" class="cancel-btn-modal" onclick="closeDeleteProjectModal()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showDeleteProjectModal() {
+            document.getElementById('deleteProjectModal').style.display = 'block';
+            document.getElementById('confirmationInput').value = '';
+            document.getElementById('confirmDeleteBtn').disabled = true;
+        }
+
+        function closeDeleteProjectModal() {
+            document.getElementById('deleteProjectModal').style.display = 'none';
+        }
+
+        // Enable delete button only when project name matches
+        document.getElementById('confirmationInput').addEventListener('input', function(e) {
+            const projectName = '{{ project.name }}';
+            const inputValue = e.target.value;
+            const deleteBtn = document.getElementById('confirmDeleteBtn');
+            
+            if (inputValue === projectName) {
+                deleteBtn.disabled = false;
+                deleteBtn.style.opacity = '1';
+                deleteBtn.style.cursor = 'pointer';
+            } else {
+                deleteBtn.disabled = true;
+                deleteBtn.style.opacity = '0.5';
+                deleteBtn.style.cursor = 'not-allowed';
+            }
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('deleteProjectModal');
+            if (event.target == modal) {
+                closeDeleteProjectModal();
+            }
+        }
+    </script>
+</body>
+</html>

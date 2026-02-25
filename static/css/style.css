@@ -125,12 +125,38 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.2s ease;
+}
+
+.project-header:hover {
+    background: #edebe9;
 }
 
 .project-header h2 {
     color: #323130;
     font-size: 1.4em;
     font-weight: 600;
+}
+
+.accordion-icon {
+    display: inline-block;
+    font-size: 0.8em;
+    margin-right: 10px;
+    color: #0078d4;
+    transition: transform 0.3s ease;
+}
+
+.unit-count {
+    font-size: 0.7em;
+    color: #605e5c;
+    font-weight: 400;
+}
+
+.project-content {
+    overflow: hidden;
+    transition: all 0.3s ease;
 }
 
 .delete-project-btn {
@@ -168,7 +194,6 @@ body {
     padding: 8px 12px;
     border: 1px solid #8a8886;
     border-radius: 2px;
-    margin-right: 10px;
     font-size: 14px;
 }
 
@@ -182,36 +207,15 @@ body {
     border: 1px solid #107c10;
     font-weight: 500;
     cursor: pointer;
+    margin-right: 10px;
 }
 
 .add-unit-form button:hover {
     background: #0b5a08;
 }
 
-/* CSV Import Section */
-.csv-import-section {
-    background: #e8f4f8;
-    padding: 20px 30px;
-    border-bottom: 1px solid #e1e1e1;
-}
-
-.csv-import-section h3 {
-    color: #323130;
-    margin-bottom: 12px;
-    font-size: 1.1em;
-    font-weight: 600;
-}
-
-.csv-import-section input[type="file"] {
-    padding: 8px 12px;
-    border: 1px solid #8a8886;
-    border-radius: 2px;
-    margin-right: 10px;
-    font-size: 14px;
-    background: white;
-}
-
-.csv-import-section button {
+/* Import CSV Button */
+.import-csv-btn {
     background: #0078d4;
     color: white;
     padding: 8px 16px;
@@ -220,15 +224,17 @@ body {
     font-weight: 500;
     cursor: pointer;
     font-size: 14px;
+    white-space: nowrap;
 }
 
-.csv-import-section button:hover {
+.import-csv-btn:hover {
     background: #106ebe;
 }
 
 /* Units Section */
 .units-section {
     padding: 25px 30px;
+    background: white;
 }
 
 .units-section h3 {
@@ -238,42 +244,97 @@ body {
     font-weight: 600;
 }
 
-/* Table Styles */
-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
+/* Units Grid - Tile View */
+.units-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+    margin-top: 15px;
 }
 
-th {
-    background: #f3f2f1;
-    color: #323130;
-    padding: 12px 15px;
-    text-align: left;
+.unit-tile {
+    background: white;
+    border: 2px solid;
+    border-radius: 4px;
+    padding: 15px 12px;
+    text-align: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.unit-tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.unit-tile-name {
     font-weight: 600;
-    font-size: 13px;
+    font-size: 15px;
+    color: #323130;
+}
+
+.unit-tile-status {
+    font-size: 11px;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    border-bottom: 2px solid #e1e1e1;
 }
 
-td {
-    padding: 12px 15px;
-    border-bottom: 1px solid #edebe9;
+/* Tile Colors by Status */
+.status-tile-available {
+    background: #f3f2f1;
+    border-color: #8a8886;
 }
 
-tr:hover td {
-    background: #faf9f8;
+.status-tile-available .unit-tile-status {
+    color: #605e5c;
 }
 
-.unit-link {
-    color: #0078d4;
-    text-decoration: none;
-    font-weight: 500;
+.status-tile-available:hover {
+    background: #edebe9;
 }
 
-.unit-link:hover {
-    text-decoration: underline;
+.status-tile-viewing {
+    background: #e1f5fe;
+    border-color: #0078d4;
+}
+
+.status-tile-viewing .unit-tile-status {
+    color: #004578;
+}
+
+.status-tile-viewing:hover {
+    background: #c7e0f4;
+}
+
+.status-tile-reserved {
+    background: #fff9e6;
+    border-color: #ffaa44;
+}
+
+.status-tile-reserved .unit-tile-status {
+    color: #8a6116;
+}
+
+.status-tile-reserved:hover {
+    background: #fff4ce;
+}
+
+.status-tile-sold {
+    background: #f1f9f1;
+    border-color: #107c10;
+}
+
+.status-tile-sold .unit-tile-status {
+    color: #0b6a0b;
+}
+
+.status-tile-sold:hover {
+    background: #dff6dd;
 }
 
 /* Status Badges */
@@ -358,6 +419,203 @@ tr:hover td {
     margin-bottom: 10px;
 }
 
+/* Flash Messages */
+.flash-message {
+    padding: 15px 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+.flash-success {
+    background: #dff6dd;
+    border-left: 4px solid #107c10;
+    color: #0b6a0b;
+}
+
+.flash-error {
+    background: #fde7e9;
+    border-left: 4px solid #d13438;
+    color: #a4262c;
+}
+
+.flash-close {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 20px;
+    font-weight: bold;
+    color: inherit;
+    opacity: 0.7;
+}
+
+.flash-close:hover {
+    opacity: 1;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 5% auto;
+    padding: 0;
+    border: 1px solid #e1e1e1;
+    border-radius: 4px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.modal-content h2 {
+    background: #faf9f8;
+    color: #323130;
+    padding: 25px 30px;
+    margin: 0;
+    border-bottom: 2px solid #e1e1e1;
+    font-size: 1.4em;
+    font-weight: 600;
+}
+
+.close {
+    color: #605e5c;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    line-height: 20px;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: #323130;
+}
+
+.modal-section {
+    padding: 25px 30px;
+    border-bottom: 1px solid #edebe9;
+}
+
+.modal-section:last-child {
+    border-bottom: none;
+}
+
+.modal-section h3 {
+    color: #323130;
+    margin-bottom: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+}
+
+.modal-section p {
+    color: #605e5c;
+    margin-bottom: 15px;
+    font-size: 14px;
+}
+
+.template-btn {
+    display: inline-block;
+    background: #107c10;
+    color: white;
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 3px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.template-btn:hover {
+    background: #0b5a08;
+}
+
+.file-upload-area {
+    border: 2px dashed #8a8886;
+    border-radius: 4px;
+    padding: 40px 20px;
+    text-align: center;
+    background: #faf9f8;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.file-upload-area.drag-over {
+    border-color: #0078d4;
+    background: #e1f5fe;
+}
+
+.upload-prompt p {
+    color: #323130;
+    margin: 10px 0;
+}
+
+.upload-prompt p:first-child {
+    font-size: 16px;
+}
+
+.browse-btn {
+    background: #0078d4;
+    color: white;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+.browse-btn:hover {
+    background: #106ebe;
+}
+
+.file-name {
+    margin-top: 15px;
+    color: #107c10;
+    font-weight: 500;
+}
+
+.upload-btn {
+    width: 100%;
+    background: #0078d4;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 3px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.upload-btn:hover {
+    background: #106ebe;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .top-nav {
@@ -379,41 +637,14 @@ tr:hover td {
         width: 100%;
         margin-bottom: 10px;
     }
-    
-    table {
-        font-size: 13px;
+
+    .units-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
     }
-}
 
-/* Accordion Styles */
-.project-header {
-    cursor: pointer;
-    user-select: none;
-    transition: background 0.2s ease;
-}
-
-.project-header:hover {
-    background: #edebe9;
-}
-
-.accordion-icon {
-    display: inline-block;
-    transition: transform 0.3s ease;
-    margin-right: 10px;
-}
-
-.project-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease;
-}
-
-.project-content.expanded {
-    max-height: 5000px; /* Large enough to fit any content */
-}
-
-/* Rotate icon when expanded */
-.project-content.expanded ~ .project-header .accordion-icon,
-.project-header:has(+ .project-content.expanded) .accordion-icon {
-    transform: rotate(180deg);
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
 }

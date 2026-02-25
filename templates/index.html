@@ -1,113 +1,80 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Unit Progress Tracker</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    </head>
-    <body>
-        <div class="container">
-            <div class="top-nav">
-                <div class="logo">Unit Progress Tracker</div>
-                <div class="nav-buttons">
-                    <a href="/dashboard">Dashboard</a>
-                    <a href="/logout" class="logout-btn">Logout</a>
+<head>
+    <title>Unit Progress Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="top-nav">
+            <div class="logo">Unit Progress Tracker</div>
+            <div class="nav-buttons">
+                <a href="/dashboard">Dashboard</a>
+                <a href="/logout" class="logout-btn">Logout</a>
+            </div>
+        </div>
+
+        <div class="add-project-section">
+            <h2>Create New Project</h2>
+            <form method="POST" action="/add_project">
+                <input type="text" name="project_name" placeholder="Enter project name (e.g., Sunset Apartments)" required>
+                <button type="submit">Create Project</button>
+            </form>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="flash-message flash-{{ category }}">
+                    <span class="flash-close" onclick="this.parentElement.style.display='none'">&times;</span>
+                    {{ message }}
                 </div>
-            </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-            <div class="add-project-section">
-                <h2>Create New Project</h2>
-                <form method="POST" action="/add_project">
-                    <input type="text" name="project_name" placeholder="Enter project name (e.g., Sunset Apartments)" required>
-                    <button type="submit">Create Project</button>
-                </form>
-            </div>
-
-            {% if projects %}
-                {% for project in projects %}
-                <div class="project-card">
-                    <div class="project-header">
-                        <h2>{{ project.name }}</h2>
-                        <form method="POST" action="/delete_project/{{ project.id }}" style="display: inline;" onsubmit="return confirm('Delete entire project and all units?');">
-                            <button type="submit" class="delete-project-btn">Delete Project</button>
-                        </form>
+        {% if projects %}
+            {% for project in projects %}
+            <div class="project-card">
+                <div class="project-header" onclick="toggleProject({{ project.id }})">
+                    <div style="display: flex; align-items: center; gap: 15px; flex: 1;">
+                        <h2>
+                            <span class="accordion-icon">▼</span>
+                            {{ project.name }} <span class="unit-count">({{ project.units|length }} units)</span>
+                        </h2>
+                        <a href="/project/{{ project.id }}" class="view-project-btn" onclick="event.stopPropagation()">View Project</a>
                     </div>
+                </div>
 
-
-                    <div class="project-content" id="project-content-{{ project.id }}"></div>
-                        <div class="add-unit-form">
-                            <h3>Add Unit to {{ project.name }}</h3>
-                            <form method="POST" action="/add_unit/{{ project.id }}">
-                                <input type="text" name="unit_name" placeholder="Unit name/number" required>
-                                <select name="status">
-                                    <option value="Available">Available</option>
-                                    <option value="Viewing">Viewing</option>
-                                    <option value="Reserved">Reserved</option>
-                                    <option value="Sold">Sold</option>
-                                </select>
+                <div class="project-content" id="project-{{ project.id }}" style="display: none;">
+                    <div class="add-unit-form">
+                        <h3>Add Unit to {{ project.name }}</h3>
+                        <form method="POST" action="/add_unit/{{ project.id }}" style="display: inline-block; margin-right: 15px;">
+                            <input type="text" name="unit_name" placeholder="Unit name/number" required>
+                            <select name="status">
+                                <option value="Available">Available</option>
+                                <option value="Viewing">Viewing</option>
+                                <option value="Reserved">Reserved</option>
+                                <option value="Sold">Sold</option>
+                            </select>
                             <button type="submit">Add Unit</button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-
-                    <!-- CSV Import Section -->
-                    <div class="csv-import-section">
-                        <h3>Import Units from CSV</h3>
-                        <form method="POST" action="/import_units/{{ project.id }}" enctype="multipart/form-data">
-                            <input type="file" name="csv_file" accept=".csv" required>
-                            <button type="submit">Import CSV</button>
                         </form>
-                        <p style="font-size: 12px; color: #605e5c; margin-top: 8px;">
-                            CSV format: unit_name, size_sqm, bedrooms, bathrooms, floor_number, selling_price, status
-                            <a href="/download_template" style="color: #0078d4;">Download template</a>
-                        </p>
+                        <button type="button" class="import-csv-btn" onclick="openImportModal({{ project.id }})">Import CSV</button>
                     </div>
-
-                    <div class="units-section">
-
 
                     <div class="units-section">
                         <h3>Units ({{ project.units|length }})</h3>
                         {% if project.units %}
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Unit Name</th>
-                                    <th>Status</th>
-                                    <th>Update Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for unit in project.units %}
-                                <tr>
-                                    <td>
-                                        <a href="/unit/{{ unit.id }}" class="unit-link">{{ unit.name }}</a>
-                                    </td>
-                                    <td>
-                                        <span class="status-badge status-{{ unit.status|lower }}">{{ unit.status }}</span>
-                                    </td>
-                                    <td>
-                                        <form method="POST" action="/update/{{ project.id }}/{{ unit.id }}" class="update-form" style="display:inline;">
-                                            <select name="new_status">
-                                                <option value="Available" {% if unit.status == 'Available' %}selected{% endif %}>Available</option>
-                                                <option value="Viewing" {% if unit.status == 'Viewing' %}selected{% endif %}>Viewing</option>
-                                                <option value="Reserved" {% if unit.status == 'Reserved' %}selected{% endif %}>Reserved</option>
-                                                <option value="Sold" {% if unit.status == 'Sold' %}selected{% endif %}>Sold</option>
-                                            </select>
-                                            <button type="submit" class="update-btn">Update</button>
-                                        </form>
-                                    </td>
-                                    <td>
-                                        <form method="POST" action="/delete_unit/{{ unit.id }}" style="display:inline;" onsubmit="return confirm('Delete this unit?');">
-                                            <button type="submit" class="delete-btn">Delete</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                        <div class="units-grid">
+                            {% for unit in project.units %}
+                            <a href="/unit/{{ unit.id }}" class="unit-tile status-tile-{{ unit.status|lower }}">
+                                <div class="unit-tile-name">{{ unit.name }}</div>
+                                <div class="unit-tile-status">{{ unit.status }}</div>
+                            </a>
+                            {% endfor %}
+                        </div>
                         {% else %}
                         <div class="empty-state">
                             <p>No units in this project yet. Add one above.</p>
@@ -115,16 +82,129 @@
                         {% endif %}
                     </div>
                 </div>
-                {% endfor %}
-            {% else %}
-            <div class="project-card">
-                <div class="empty-state">
-                    <h3>No Projects Yet</h3>
-                    <p>Create your first project above to get started.</p>
-                </div>
             </div>
-            {% endif %}
+            {% endfor %}
+        {% else %}
+        <div class="project-card">
+            <div class="empty-state">
+                <h3>No Projects Yet</h3>
+                <p>Create your first project above to get started.</p>
+            </div>
         </div>
+        {% endif %}
+    </div>
 
-    </body>
+    <!-- CSV Import Modal -->
+    <div id="csvImportModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeImportModal()">&times;</span>
+            <h2>Import Units from CSV</h2>
+            
+            <div class="modal-section">
+                <h3>Step 1: Download Template</h3>
+                <p>Download the CSV template with the correct column headers.</p>
+                <a href="/download_template" class="template-btn" download>Download CSV Template</a>
+            </div>
+
+            <div class="modal-section">
+                <h3>Step 2: Upload Your CSV</h3>
+                <form id="csvUploadForm" method="POST" action="" enctype="multipart/form-data">
+                    <div class="file-upload-area" id="dropZone">
+                        <input type="file" id="csvFileInput" name="csv_file" accept=".csv" required style="display: none;">
+                        <div class="upload-prompt">
+                            <p><strong>Drop CSV file here</strong></p>
+                            <p>or</p>
+                            <button type="button" class="browse-btn" onclick="document.getElementById('csvFileInput').click()">Browse Files</button>
+                        </div>
+                        <div id="fileName" class="file-name"></div>
+                    </div>
+                    <button type="submit" class="upload-btn">Upload and Import</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentProjectId = null;
+        let openProjectId = null;
+
+        function toggleProject(projectId) {
+            const content = document.getElementById('project-' + projectId);
+            const allProjects = document.querySelectorAll('.project-content');
+            const allIcons = document.querySelectorAll('.accordion-icon');
+            
+            // Close all other projects
+            allProjects.forEach(project => {
+                if (project.id !== 'project-' + projectId) {
+                    project.style.display = 'none';
+                }
+            });
+            
+            // Reset all icons
+            allIcons.forEach(icon => {
+                icon.textContent = '▼';
+            });
+            
+            // Toggle current project
+            if (content.style.display === 'none') {
+                content.style.display = 'block';
+                event.target.closest('.project-header').querySelector('.accordion-icon').textContent = '▲';
+                openProjectId = projectId;
+            } else {
+                content.style.display = 'none';
+                event.target.closest('.project-header').querySelector('.accordion-icon').textContent = '▼';
+                openProjectId = null;
+            }
+        }
+
+        function openImportModal(projectId) {
+            currentProjectId = projectId;
+            document.getElementById('csvImportModal').style.display = 'block';
+            document.getElementById('csvUploadForm').action = '/import_csv/' + projectId;
+        }
+
+        function closeImportModal() {
+            document.getElementById('csvImportModal').style.display = 'none';
+            document.getElementById('csvFileInput').value = '';
+            document.getElementById('fileName').textContent = '';
+        }
+
+        document.getElementById('csvFileInput').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                document.getElementById('fileName').textContent = 'Selected file: ' + fileName;
+            }
+        });
+
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('drag-over');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('drag-over');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].name.endsWith('.csv')) {
+                document.getElementById('csvFileInput').files = files;
+                document.getElementById('fileName').textContent = 'Selected file: ' + files[0].name;
+            }
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('csvImportModal');
+            if (event.target == modal) {
+                closeImportModal();
+            }
+        }
+    </script>
+</body>
 </html>
