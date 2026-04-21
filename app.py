@@ -4,6 +4,9 @@ import psycopg2.extras
 import os
 import csv
 import io
+import bcrypt
+from functools import wraps
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = 'amadea'  # Change this in production
@@ -32,6 +35,61 @@ def format_price(price_str):
         # If conversion fails, return original
         return price_str
 
+# Helper function to hash passwords
+def hash_password(password):
+    """Hash a password using bcrypt"""
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+# Helper function to verify passwords
+def verify_password(password, password_hash):
+    """Verify a password against its hash"""
+    return bcrypt.checkpw(password.encode('utf-8'), password_hash.encode('utf-8'))
+
+# Helper function to log audit trail
+def log_audit(user_id, action, entity_type, entity_id, entity_name, old_value=None, new_value=None):
+    """Log an action to the audit trail"""
+    try:
+        conn = get_db()
+        cur = conn.cursor()
+        ip_address = request.remote_addr if request else None
+        
+        cur.execute('''
+            INSERT INTO audit_log (user_id, action, entity_type, entity_id, entity_name, old_value, new_value, ip_address)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        ''', (user_id, action, entity_type, entity_id, entity_name, old_value, new_value, ip_address))
+        
+        conn.commit()
+        cur.close()
+        conn.close()
+    except Exception as e:
+        print(f"Audit log error: {e}")
+
+# Decorator to require login
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+# Decorator to require admin role
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'user_id' not in session:
+            flash('Please log in to access this page.', 'error')
+            return redirect(url_for('login'))
+        
+        if session.get('role') != 'admin':
+            flash('You do not have permission to access this page.', 'error')
+            return redirect(url_for('home'))
+        
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Function to get database connection
 def get_db():
     conn = psycopg2.connect(DATABASE_URL)
@@ -42,10 +100,28 @@ def init_db():
     conn = get_db()
     cur = conn.cursor()
     
+    # Users table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT UNIQUE NOT NULL,
+            email TEXT UNIQUE NOT NULL,
+            password_hash TEXT NOT NULL,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            role TEXT NOT NULL DEFAULT 'user',
+            is_active BOOLEAN DEFAULT TRUE,
+            must_change_password BOOLEAN DEFAULT TRUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     cur.execute('''
         CREATE TABLE IF NOT EXISTS projects (
             id SERIAL PRIMARY KEY,
-            name TEXT NOT NULL
+            name TEXT NOT NULL,
+            created_by INTEGER REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     
@@ -64,7 +140,9 @@ def init_db():
             buyer_phone TEXT,
             buyer_email TEXT,
             sale_price TEXT,
-            notes TEXT
+            notes TEXT,
+            created_by INTEGER REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
     
@@ -92,6 +170,22 @@ def init_db():
         )
     ''')
     
+    # Audit log table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS audit_log (
+            id SERIAL PRIMARY KEY,
+            user_id INTEGER REFERENCES users(id),
+            action TEXT NOT NULL,
+            entity_type TEXT NOT NULL,
+            entity_id INTEGER,
+            entity_name TEXT,
+            old_value TEXT,
+            new_value TEXT,
+            ip_address TEXT,
+            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    
     conn.commit()
     cur.close()
     conn.close()
@@ -101,26 +195,137 @@ init_db()
 # Login route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        password = request.form['password']
-        if password == 'admin123':
-            session['logged_in'] = True
+    # Check if any users exist
+    conn = get_db()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    cur.execute('SELECT COUNT(*) as count FROM users')
+    user_count = cur.fetchone()['count']
+    
+    # If no users exist, show first admin creation form
+    if user_count == 0:
+        if request.method == 'POST':
+            username = request.form.get('username', '').strip()
+            email = request.form.get('email', '').strip()
+            first_name = request.form.get('first_name', '').strip()
+            last_name = request.form.get('last_name', '').strip()
+            password = request.form.get('password', '').strip()
+            confirm_password = request.form.get('confirm_password', '').strip()
+            
+            # Validation
+            if not all([username, email, first_name, last_name, password]):
+                cur.close()
+                conn.close()
+                return render_template('create_first_admin.html', error='All fields are required')
+            
+            if password != confirm_password:
+                cur.close()
+                conn.close()
+                return render_template('create_first_admin.html', error='Passwords do not match')
+            
+            if len(password) < 6:
+                cur.close()
+                conn.close()
+                return render_template('create_first_admin.html', error='Password must be at least 6 characters')
+            
+            # Create first admin user
+            password_hash = hash_password(password)
+            
+            cur.execute('''
+                INSERT INTO users (username, email, password_hash, first_name, last_name, role, must_change_password)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                RETURNING id
+            ''', (username, email, password_hash, first_name, last_name, 'admin', False))
+            
+            user_id = cur.fetchone()['id']
+            conn.commit()
+            
+            # Log the creation
+            log_audit(user_id, 'create', 'user', user_id, username, None, f'First admin user created')
+            
+            # Auto-login
+            session['user_id'] = user_id
+            session['username'] = username
+            session['role'] = 'admin'
+            session['full_name'] = f"{first_name} {last_name}"
+            
+            cur.close()
+            conn.close()
+            
+            flash(f'Welcome {first_name}! You are now the first administrator.', 'success')
             return redirect(url_for('home'))
-        else:
-            return render_template('login.html', error='Invalid password')
+        
+        cur.close()
+        conn.close()
+        return render_template('create_first_admin.html')
+    
+    # Normal login for existing users
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+        
+        if not username or not password:
+            cur.close()
+            conn.close()
+            return render_template('login.html', error='Username and password are required')
+        
+        # Find user
+        cur.execute('SELECT * FROM users WHERE username = %s AND is_active = TRUE', (username,))
+        user = cur.fetchone()
+        
+        if not user:
+            cur.close()
+            conn.close()
+            return render_template('login.html', error='Invalid username or password')
+        
+        # Verify password
+        if not verify_password(password, user['password_hash']):
+            cur.close()
+            conn.close()
+            return render_template('login.html', error='Invalid username or password')
+        
+        # Set session
+        session['user_id'] = user['id']
+        session['username'] = user['username']
+        session['role'] = user['role']
+        session['full_name'] = f"{user['first_name']} {user['last_name']}"
+        session['must_change_password'] = user['must_change_password']
+        
+        # Log the login
+        log_audit(user['id'], 'login', 'user', user['id'], username, None, 'User logged in')
+        
+        cur.close()
+        conn.close()
+        
+        # Check if password change required
+        if user['must_change_password']:
+            flash('You must change your password before continuing.', 'error')
+            return redirect(url_for('change_password'))
+        
+        flash(f'Welcome back, {user["first_name"]}!', 'success')
+        return redirect(url_for('home'))
+    
+    cur.close()
+    conn.close()
     return render_template('login.html')
 
 # Logout route
 @app.route('/logout')
 def logout():
-    session.pop('logged_in', None)
+    user_id = session.get('user_id')
+    username = session.get('username')
+    
+    if user_id:
+        log_audit(user_id, 'logout', 'user', user_id, username, None, 'User logged out')
+    
+    session.clear()
+    flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
 
 # Check if user is logged in
 @app.before_request
 def require_login():
     allowed_routes = ['login', 'static']
-    if request.endpoint not in allowed_routes and 'logged_in' not in session:
+    if request.endpoint not in allowed_routes and 'user_id' not in session:
         return redirect(url_for('login'))
 
 @app.route('/')

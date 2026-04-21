@@ -1,4 +1,5 @@
 {
     "vscode-pets.petSize": "large",
-    "vscode-pets.theme": "castle"
+    "vscode-pets.theme": "castle",
+    "faa.cooldownSeconds": 2
 }

@@ -4,6 +4,23 @@
     <title>Login - Unit Tracker</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <style>
+        /* Additional styles for the longer form */
+        .login-card {
+            max-width: 480px;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        label {
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
@@ -18,14 +35,14 @@
             {% endif %}
             
             <form method="POST">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Enter your username" required autofocus>
+                
                 <label>Password</label>
-                <input type="password" name="password" placeholder="Enter your password" required autofocus>
+                <input type="password" name="password" placeholder="Enter your password" required>
+                
                 <button type="submit">Sign In</button>
             </form>
-            
-            <div class="footer-note">
-                For demonstration: password is <strong>admin123</strong>
-            </div>
         </div>
     </div>
 </body>

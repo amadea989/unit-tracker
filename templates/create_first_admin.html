@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create First Admin - Unit Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+    <style>
+        /* Additional styles for the longer form */
+        .login-card {
+            max-width: 480px;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        
+        label {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo-section">
+                <h1>Unit Progress Tracker</h1>
+                <p>Create First Administrator Account</p>
+            </div>
+            
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+            
+            <form method="POST">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Choose a username" required autofocus>
+                
+                <label>Email</label>
+                <input type="email" name="email" placeholder="your.email@example.com" required>
+                
+                <label>First Name</label>
+                <input type="text" name="first_name" placeholder="First name" required>
+                
+                <label>Last Name</label>
+                <input type="text" name="last_name" placeholder="Last name" required>
+                
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Minimum 6 characters" required>
+                
+                <label>Confirm Password</label>
+                <input type="password" name="confirm_password" placeholder="Re-enter password" required>
+                
+                <button type="submit">Create Admin Account</button>
+            </form>
+            
+            <div class="footer-note">
+                This is a one-time setup. You will become the system administrator.
+            </div>
+        </div>
+    </div>
+</body>
+</html>
